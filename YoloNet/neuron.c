@@ -38,8 +38,10 @@ Neuron* mk_neuron(int dimension, scalar (*func)(scalar), scalar (*dfunc)(scalar)
     
     neuron->learning_rate = DEFAULT_LEARNING_RATE;
     neuron->rand_rate = DEFAULT_RAND_RATE;
-    neuron->rand_start = DEFAULT_RAND_START;
-    neuron->rand_end = DEFAULT_RAND_END;
+    neuron->w_rand_start = DEFAULT_RAND_START;
+    neuron->w_rand_end = DEFAULT_RAND_END;
+    neuron->b_rand_start = DEFAULT_RAND_START;
+    neuron->b_rand_end = DEFAULT_RAND_END;
     
     neuron->dimension = dimension;
     neuron->weights = emalloc(sizeof(scalar) * dimension);
@@ -53,13 +55,30 @@ Neuron* mk_neuron(int dimension, scalar (*func)(scalar), scalar (*dfunc)(scalar)
     return neuron;
 }
 
-void randomize_neuron(Neuron* n, scalar start, scalar end) {
+void randomize_neuron(Neuron* n) {
     scalar r;
-    int mod = ((scalar) (end - start)) * SCALAR_GRANULARITY;
+    int mod = 0;
+    int start = 0;
+    int end = 0;
     for (int i = 0; i < n->dimension * 2; i++) {
-        r = ((scalar) (rand() % mod)) / SCALAR_GRANULARITY + start;
-        if (i < n->dimension) n->weights[i] = r;
-        //else n->biases[i] = r; // TODO
+        
+        /* choose mod */
+        if (i == 0) { // weights
+            start = n->w_rand_start;
+            end = n->w_rand_end;
+            mod = ((scalar) (end - start)) * SCALAR_GRANULARITY;
+        }
+        else if (i == n -> dimension) { // biases
+            start = n->b_rand_start;
+            end = n->b_rand_end;
+            mod = ((scalar) (end - start)) * SCALAR_GRANULARITY;
+        }
+        
+        if (mod > 0) {
+            r = ((scalar) (rand() % mod)) / SCALAR_GRANULARITY + start;
+            if (i < n->dimension) n->weights[i] = r;
+            else n->biases[i] = r;
+        }
     }
 }
 
@@ -88,7 +107,7 @@ void train_neuron(Neuron* n, scalar* input, scalar output) {
     /* randomization (if triggered) */
     if (n->rand_rate >= ((double) (rand() % RANDOM_GRANULARITY)) / ((double) RANDOM_GRANULARITY)) {
         TRACE("Randomizing neuron (probability %f)\n", n->rand_rate);
-        randomize_neuron(n, n->rand_start, n->rand_end);
+        randomize_neuron(n);
     }
     
     /* backpropogation weight update */
@@ -116,7 +135,7 @@ void print_neuron(Neuron* neuron) { // ik, this code is cancer
         if (i != neuron->dimension - 1) {
             printf("%f, ", neuron->weights[i]);
         } else {
-            printf("%f ]\n", neuron->weights[i]);
+            printf("%f]\n", neuron->weights[i]);
         }
     }
     printf("biases: [");
@@ -124,7 +143,7 @@ void print_neuron(Neuron* neuron) { // ik, this code is cancer
         if (i != neuron->dimension - 1) {
             printf("%f, ", neuron->biases[i]);
         } else {
-            printf("%f ]\n", neuron->biases[i]);
+            printf("%f]\n", neuron->biases[i]);
         }
     }
 }

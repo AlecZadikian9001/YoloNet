@@ -32,7 +32,9 @@ int main(int argc, const char * argv[]) {
     srand((int) time(NULL));
     
     Neuron* n = mk_neuron(2, &neuron_func_tanh, &neuron_dfunc_tanh);
-    randomize_neuron(n, n->rand_start, n->rand_end);
+    n->b_rand_start = 0;
+    n->b_rand_end = 0;
+    randomize_neuron(n);
     
     scalar input[] = {1.0, 1.0};
     scalar output = 0.5;

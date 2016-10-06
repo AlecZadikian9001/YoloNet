@@ -31,8 +31,10 @@ typedef struct {
     // stuff to tune
     scalar learning_rate; // learning rate
     scalar rand_rate; // chance of randomizing
-    scalar rand_start; // start of random params
-    scalar rand_end; // end of random params
+    scalar w_rand_start; // start of random weight
+    scalar w_rand_end; // end of random weight
+    scalar b_rand_start; // start of random bias
+    scalar b_rand_end; // end of random bias
     
     // l3rning st4te
     scalar best_sq_error; // best E^2 found thus far
@@ -58,7 +60,7 @@ void print_neuron(Neuron* neuron);
 
 /* neuron methods */
 
-void randomize_neuron(Neuron* n, scalar start, scalar end);
+void randomize_neuron(Neuron* n);
 scalar activate_neuron(Neuron* n, scalar* input, int best);
 void train_neuron(Neuron* n, scalar* input, scalar output);
     
