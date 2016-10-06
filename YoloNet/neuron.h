@@ -72,7 +72,11 @@ void finish_neuron_sequence(Neuron* n);
 
 /* activation functions */
 
-// tanh, a basic activation function
+// identity function
+scalar neuron_func_id(scalar input);
+scalar neuron_dfunc_id(scalar input);
+
+// tanh, a commonly used activation function
 scalar neuron_func_tanh(scalar input);
 scalar neuron_dfunc_tanh(scalar input);
 

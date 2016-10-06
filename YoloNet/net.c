@@ -13,3 +13,10 @@ struct Neural_Node {
     struct Neural_Node* inputs; // NULL if net input
 };
 
+struct Neural_Node** create_deep_net() {
+    
+    Neuron* in1 = mk_neuron(1, &neuron_func_id, &neuron_dfunc_id);
+    Neuron* in2 = mk_neuron(1, &neuron_func_id, &neuron_dfunc_id);
+    
+}
+

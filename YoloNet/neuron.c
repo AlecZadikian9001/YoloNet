@@ -188,6 +188,14 @@ void print_neuron(Neuron* neuron) { // ik, this code is cancer
 
 /* NEURON FUNCTIONS BELOW */
 
+scalar neuron_func_id(scalar input) { // identity
+    return input;
+}
+
+scalar neuron_dfunc_id(scalar input) { // return 1
+    return 1;
+}
+
 scalar neuron_func_tanh(scalar input) { // pH > 7
     return (scalar) tanh(input);
 }
