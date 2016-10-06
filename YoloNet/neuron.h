@@ -37,7 +37,9 @@ typedef struct {
     scalar b_rand_end; // end of random bias
     
     // l3rning st4te
-    scalar best_sq_error; // best E^2 found thus far
+    scalar best_sq_error; // best average of E^2 found thus far
+    scalar sum_sq_error; // sum of E^2 for the current sequence
+    int seq_len; // how many iterations within the current sequence
     int virgin; // 0 = trained, 1 = fresh
     
     // input: return output
@@ -62,7 +64,9 @@ void print_neuron(Neuron* neuron);
 
 void randomize_neuron(Neuron* n);
 scalar activate_neuron(Neuron* n, scalar* input, int best);
+void begin_neuron_sequence(Neuron* n);
 void train_neuron(Neuron* n, scalar* input, scalar output);
+void finish_neuron_sequence(Neuron* n);
     
 /* end */
 
