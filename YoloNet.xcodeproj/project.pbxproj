@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		E19C4F451DA597EF0008DBF8 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = E19C4F441DA597EF0008DBF8 /* main.c */; };
+		E19C4F4E1DA5983B0008DBF8 /* neuron.c in Sources */ = {isa = PBXBuildFile; fileRef = E19C4F4D1DA5983B0008DBF8 /* neuron.c */; };
+		E19C4F511DA5B6610008DBF8 /* general.c in Sources */ = {isa = PBXBuildFile; fileRef = E19C4F501DA5B6610008DBF8 /* general.c */; };
+		E19C4F541DA5D05F0008DBF8 /* net.c in Sources */ = {isa = PBXBuildFile; fileRef = E19C4F521DA5D05F0008DBF8 /* net.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,6 +28,12 @@
 /* Begin PBXFileReference section */
 		E19C4F411DA597EF0008DBF8 /* YoloNet */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = YoloNet; sourceTree = BUILT_PRODUCTS_DIR; };
 		E19C4F441DA597EF0008DBF8 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
+		E19C4F4C1DA598300008DBF8 /* neuron.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = neuron.h; sourceTree = "<group>"; };
+		E19C4F4D1DA5983B0008DBF8 /* neuron.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = neuron.c; sourceTree = "<group>"; };
+		E19C4F4F1DA5B4700008DBF8 /* general.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = general.h; sourceTree = "<group>"; };
+		E19C4F501DA5B6610008DBF8 /* general.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = general.c; sourceTree = "<group>"; };
+		E19C4F521DA5D05F0008DBF8 /* net.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = net.c; sourceTree = "<group>"; };
+		E19C4F531DA5D05F0008DBF8 /* net.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = net.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +67,12 @@
 			isa = PBXGroup;
 			children = (
 				E19C4F441DA597EF0008DBF8 /* main.c */,
+				E19C4F4F1DA5B4700008DBF8 /* general.h */,
+				E19C4F501DA5B6610008DBF8 /* general.c */,
+				E19C4F4C1DA598300008DBF8 /* neuron.h */,
+				E19C4F4D1DA5983B0008DBF8 /* neuron.c */,
+				E19C4F521DA5D05F0008DBF8 /* net.c */,
+				E19C4F531DA5D05F0008DBF8 /* net.h */,
 			);
 			path = YoloNet;
 			sourceTree = "<group>";
@@ -119,6 +134,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E19C4F4E1DA5983B0008DBF8 /* neuron.c in Sources */,
+				E19C4F541DA5D05F0008DBF8 /* net.c in Sources */,
+				E19C4F511DA5B6610008DBF8 /* general.c in Sources */,
 				E19C4F451DA597EF0008DBF8 /* main.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

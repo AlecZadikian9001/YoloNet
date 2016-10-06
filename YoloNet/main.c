@@ -7,9 +7,18 @@
 //
 
 #include <stdio.h>
+#include "general.h"
+#include "neuron.h"
+#include "net.h"
 
 int main(int argc, const char * argv[]) {
-    // insert code here...
-    printf("Hello, World!\n");
+    
+    for (int i = 0; i < 100000; i++) {
+        Neuron* n = mk_neuron(5, NULL);
+        randomize_neuron(n, -1.9, 24.9);
+        print_neuron(n);
+        free_neuron(n);
+    }
+    
     return 0;
 }
