@@ -76,8 +76,11 @@ void randomize_neuron(Neuron* n) {
         
         if (mod > 0) {
             r = ((scalar) (rand() % mod)) / SCALAR_GRANULARITY + start;
-            if (i < n->dimension) n->weights[i] = r;
-            else n->biases[i] = r;
+            if (i < n->dimension) {
+                n->weights[i] = r;
+            } else { // if i >= n->dimension
+                n->biases[i - n->dimension] = r;
+            }
         }
     }
 }
@@ -123,9 +126,17 @@ void train_neuron(Neuron* n, scalar* input, scalar output) {
     }
     
     scalar new_error = activate_neuron(n, input, 0) - output;
-    if (new_error < error) {
-        TRACE("Improved neuron error from %f to %f\n", error, new_error);
+    scalar sq_error = new_error * new_error;
+    if (n->virgin || sq_error < n->best_sq_error) {
+        if (n->virgin) {
+            TRACE("Neuron was virgin; set E^2 to %f\n", sq_error);
+            n->virgin = 0;
+        } else {
+            TRACE("Improved E^2 from %f to %f\n", n->best_sq_error, sq_error);
+        }
         memcpy(n->best_weights, n->weights, sizeof(scalar) * n->dimension);
+        memcpy(n->best_biases, n->biases, sizeof(scalar) * n->dimension);
+        n->best_sq_error = sq_error;
     }
 }
 

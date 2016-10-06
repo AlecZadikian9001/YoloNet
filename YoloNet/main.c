@@ -32,8 +32,8 @@ int main(int argc, const char * argv[]) {
     srand((int) time(NULL));
     
     Neuron* n = mk_neuron(2, &neuron_func_tanh, &neuron_dfunc_tanh);
-    n->b_rand_start = 0;
-    n->b_rand_end = 0;
+    //n->b_rand_start = 0;
+    //n->b_rand_end = 0;
     randomize_neuron(n);
     
     scalar input[] = {1.0, 1.0};
@@ -42,13 +42,13 @@ int main(int argc, const char * argv[]) {
     
     for (int i = 0; 1; i++) {
         train_neuron(n, input, output);
-        result = activate_neuron(n, input, 1);
-        printf("%f vs %f\n", result, output);
-        if (fabs(result - output) < 0.0001) {
+        if (n->best_sq_error < 0.000001) {
             printf("good enough after %d iterations\n", i);
             break;
         }
     }
+    result = activate_neuron(n, input, 1);
+    printf("%f vs %f\n", result, output);
     print_neuron(n);
     free_neuron(n);
     
