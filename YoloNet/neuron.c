@@ -10,46 +10,121 @@
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
+#include <string.h>
 
 #include "neuron.h"
 
+/* defaults */
+#define DEFAULT_LEARNING_RATE (0.5)
+#define DEFAULT_RAND_RATE (0.01)
+#define DEFAULT_RAND_START (-10)
+#define DEFAULT_RAND_END (10)
+
+/* misc */
+#define SCALAR_GRANULARITY ((scalar) 100000)
+#define RANDOM_GRANULARITY (10000)
+
 void free_neuron(Neuron* neuron) {
     free(neuron->weights);
+    free(neuron->best_weights);
+    free(neuron->biases);
+    free(neuron->best_biases);
     free(neuron);
 }
 
-Neuron* mk_neuron(int num_weights, scalar (*func)(int, scalar*, scalar*)) {
+Neuron* mk_neuron(int dimension, scalar (*func)(scalar), scalar (*dfunc)(scalar)) {
     Neuron* neuron = emalloc(sizeof(Neuron));
+    neuron->virgin = 1;
+    
+    neuron->learning_rate = DEFAULT_LEARNING_RATE;
+    neuron->rand_rate = DEFAULT_RAND_RATE;
+    neuron->rand_start = DEFAULT_RAND_START;
+    neuron->rand_end = DEFAULT_RAND_END;
+    
+    neuron->dimension = dimension;
+    neuron->weights = emalloc(sizeof(scalar) * dimension);
+    neuron->best_weights = emalloc(sizeof(scalar) * dimension);
+    neuron->biases = emalloc(sizeof(scalar) * dimension);
+    neuron->best_biases = emalloc(sizeof(scalar) * dimension);
+    
     neuron->func = func;
-    neuron->weights = emalloc(sizeof(scalar) * num_weights);
-    neuron->num_weights = num_weights;
+    neuron->dfunc = dfunc;
+    
     return neuron;
 }
 
 void randomize_neuron(Neuron* n, scalar start, scalar end) {
     scalar r;
     int mod = ((scalar) (end - start)) * SCALAR_GRANULARITY;
-    for (int i = 0; i < n->num_weights; i++) {
+    for (int i = 0; i < n->dimension * 2; i++) {
         r = ((scalar) (rand() % mod)) / SCALAR_GRANULARITY + start;
-        n->weights[i] = r;
+        if (i < n->dimension) n->weights[i] = r;
+        //else n->biases[i] = r; // TODO
     }
 }
 
-scalar activate_neuron(Neuron* n, scalar* input) {
-    return n->func(n->num_weights, input, n->weights);
+scalar activate_neuron(Neuron* n, scalar* input, int best) { // best = 0 if use current, 1 if use best
+    scalar* biases;
+    scalar* weights;
+    
+    if (best) {
+        biases = n->best_biases;
+        weights = n->best_weights;
+    } else { // if !best
+        biases = n->biases;
+        weights = n->weights;
+    }
+    
+    scalar sum = 0;
+    for (int i = 0; i < n->dimension; i++) {
+        sum += biases[i] + weights[i] * input[i];
+    }
+    return n->func(sum);
 }
 
-void train_neuron(Neuron* n, scalar output) {
-    // TODO how the fuck do I do this?
+/* try input on neuron with given "correct" output, and train one iteration */
+void train_neuron(Neuron* n, scalar* input, scalar output) {
+    
+    /* randomization (if triggered) */
+    if (n->rand_rate >= ((double) (rand() % RANDOM_GRANULARITY)) / ((double) RANDOM_GRANULARITY)) {
+        TRACE("Randomizing neuron (probability %f)\n", n->rand_rate);
+        randomize_neuron(n, n->rand_start, n->rand_end);
+    }
+    
+    /* backpropogation weight update */
+    // http://www.philbrierley.com/main.html?code/bpproof.html&code/codeleft.html :
+    // ∂E^2/dW_i = ∂E^2/∂I_i * ∂I_i/∂W_i
+    // ∂I_i/∂W_i = O_i
+    // ∂E^2/∂I_i = 2E * ∂F(I_i)/∂(I_i)
+    scalar error = activate_neuron(n, input, 0) - output;
+    for (int i = 0; i < n->dimension; i++) {
+        // delta = 2 * error * n->dfunc(input[i]) * input[i]; // ∂E^2/dW_i
+        // (new W_i) = (old W_i) - (learning rate) * ∂E^2/dW_i
+        n->weights[i] = n->weights[i] - n->learning_rate * (2 * error * n->dfunc(input[i]) * input[i]);
+    }
+    
+    scalar new_error = activate_neuron(n, input, 0) - output;
+    if (new_error < error) {
+        TRACE("Improved neuron error from %f to %f\n", error, new_error);
+        memcpy(n->best_weights, n->weights, sizeof(scalar) * n->dimension);
+    }
 }
 
-void print_neuron(Neuron* neuron) {
-    printf("[");
-    for (int i = 0; i < neuron->num_weights; i++) {
-        if (i != neuron->num_weights - 1) {
+void print_neuron(Neuron* neuron) { // ik, this code is cancer
+    printf("weights: [");
+    for (int i = 0; i < neuron->dimension; i++) {
+        if (i != neuron->dimension - 1) {
             printf("%f, ", neuron->weights[i]);
         } else {
             printf("%f ]\n", neuron->weights[i]);
+        }
+    }
+    printf("biases: [");
+    for (int i = 0; i < neuron->dimension; i++) {
+        if (i != neuron->dimension - 1) {
+            printf("%f, ", neuron->biases[i]);
+        } else {
+            printf("%f ]\n", neuron->biases[i]);
         }
     }
 }
@@ -58,10 +133,11 @@ void print_neuron(Neuron* neuron) {
 
 /* NEURON FUNCTIONS BELOW */
 
-scalar neuron_func_tanh(int num, scalar* input, scalar* weights) {
-    scalar sum = 0;
-    for (int i = 0; i < num; i++) {
-        sum += weights[i] * input[i];
-    }
-    return tanh(sum);
+scalar neuron_func_tanh(scalar input) { // pH > 7
+    return (scalar) tanh(input);
+}
+
+scalar neuron_dfunc_tanh(scalar input) { // 1 - \tanh^2(x)
+    scalar t = tanh(input);
+    return 1 - (t * t);
 }

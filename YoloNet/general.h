@@ -12,7 +12,7 @@
 /* m3m management stuff */
 void *emalloc(unsigned size);
 
-/* l0gging */
+/* l0gging (BROKEN FOR NOW) */
 #define LOG_ERROR 0
 #define LOG_WARN 1
 #define LOG_VERBOSE 2
@@ -20,6 +20,11 @@ void *emalloc(unsigned size);
 #define LOG_TRACE 4
 
 #define LOG_LEVEL LOG_TRACE
-void azlog(int level, char* str);
+void azlog(int level, const char* format, ...); // TODO broken
+
+/* ratchet logging */
+#define VERBOSE printf
+#define TRACE printf
+#define ERROR printf
 
 #endif /* general_h */

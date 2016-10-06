@@ -6,19 +6,49 @@
 //  Copyright © 2016 AlecZ. All rights reserved.
 //
 
+/*
+ ██╗   ██╗ ██████╗ ██╗      ██████╗         ███╗   ██╗███████╗████████╗
+ ╚██╗ ██╔╝██╔═══██╗██║     ██╔═══██╗        ████╗  ██║██╔════╝╚══██╔══╝
+  ╚████╔╝ ██║   ██║██║     ██║   ██║        ██╔██╗ ██║█████╗     ██║
+   ╚██╔╝  ██║   ██║██║     ██║   ██║        ██║╚██╗██║██╔══╝     ██║
+    ██║   ╚██████╔╝███████╗╚██████╔╝███████╗██║ ╚████║███████╗   ██║
+    ╚═╝    ╚═════╝ ╚══════╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝╚══════╝   ╚═╝
+    ╔═╗  ┬ ┬┌─┐┌─┐┬┌─  ┌┐ ┬ ┬  ╔═╗┬  ┌─┐┌─┐╔═╗
+    ╠═╣  ├─┤├─┤│  ├┴┐  ├┴┐└┬┘  ╠═╣│  ├┤ │  ╔═╝
+    ╩ ╩  ┴ ┴┴ ┴└─┘┴ ┴  └─┘ ┴   ╩ ╩┴─┘└─┘└─┘╚═╝
+ */
+
 #include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <time.h>
+
 #include "general.h"
 #include "neuron.h"
 #include "net.h"
 
 int main(int argc, const char * argv[]) {
     
-    for (int i = 0; i < 100000; i++) {
-        Neuron* n = mk_neuron(5, NULL);
-        randomize_neuron(n, -1.9, 24.9);
-        print_neuron(n);
-        free_neuron(n);
+    srand((int) time(NULL));
+    
+    Neuron* n = mk_neuron(2, &neuron_func_tanh, &neuron_dfunc_tanh);
+    randomize_neuron(n, n->rand_start, n->rand_end);
+    
+    scalar input[] = {1.0, 1.0};
+    scalar output = 0.5;
+    scalar result;
+    
+    for (int i = 0; 1; i++) {
+        train_neuron(n, input, output);
+        result = activate_neuron(n, input, 1);
+        printf("%f vs %f\n", result, output);
+        if (fabs(result - output) < 0.0001) {
+            printf("good enough after %d iterations\n", i);
+            break;
+        }
     }
+    print_neuron(n);
+    free_neuron(n);
     
     return 0;
 }

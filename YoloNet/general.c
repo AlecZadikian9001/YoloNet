@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <stdarg.h>
 
 #include "general.h"
 
@@ -22,10 +23,14 @@ void *emalloc(unsigned size)
     return p;
 }
 
-void azlog(int level, char* str) {
+void azlog(int level, const char* format, ...) {
     if (LOG_LEVEL < level) {
         return;
     } else {
-        printf("[%d] %s\n", level, str);
+        va_list argptr;
+        va_start(argptr, format);
+        printf("[%d] ", level);
+        printf(format, argptr);
+        va_end(argptr);
     }
 }
