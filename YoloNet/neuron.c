@@ -15,8 +15,8 @@
 #include "neuron.h"
 
 /* defaults */
-#define DEFAULT_LEARNING_RATE (0.10)
-#define DEFAULT_BACKPROP_RATE (0.5)
+#define DEFAULT_LEARNING_RATE (0.1)
+#define DEFAULT_BACKPROP_RATE (0.1)
 #define DEFAULT_RAND_RATE (0.01)
 #define DEFAULT_RAND_START (-10)
 #define DEFAULT_RAND_END (10)
@@ -127,7 +127,7 @@ void train_neuron(Neuron* n, scalar* input, scalar output) {
     
     /* randomization (if triggered) */
     if (n->rand_rate >= ((double) (rand() % RANDOM_GRANULARITY)) / ((double) RANDOM_GRANULARITY)) {
-        TRACE("Randomizing neuron (probability %f)\n", n->rand_rate);
+        //TRACE("Randomizing neuron (probability %f)\n", n->rand_rate);
         randomize_neuron(n);
     }
     
@@ -140,8 +140,8 @@ void train_neuron(Neuron* n, scalar* input, scalar output) {
     for (int i = 0; i < n->dimension; i++) {
         // delta = 2 * error * n->dfunc(input[i]) * input[i]; // ∂E^2/dW_i
         // (new W_i) = (old W_i) - (learning rate) * ∂E^2/dW_i
-        n->weights[i] = n->weights[i] - n->learning_rate * (2 * error * n->dfunc(input[i]) * input[i]);
-        n->backprop[i] = input[i] - n->backprop_rate * (2 * error * n->dfunc(input[i]) * input[i]);
+        n->weights[i] = n->weights[i] - (n->learning_rate * 2 * error * n->dfunc(input[i]) * input[i]);
+        n->backprop[i] = input[i] - (n->backprop_rate * 2 * error * n->dfunc(input[i])); // just ∂E^2/∂I_i
     }
     
     n->sum_sq_error += error * error;
@@ -150,6 +150,9 @@ void train_neuron(Neuron* n, scalar* input, scalar output) {
 
 void finish_neuron_sequence(Neuron* n) {
     
+    if (n->seq_len <= 0) {
+        return;
+    }
     VERBOSE("Finishing neuron sequence len %d\n", n->seq_len);
     
     /* get avg sq error */
@@ -168,7 +171,7 @@ void finish_neuron_sequence(Neuron* n) {
         n->best_sq_error = avg_sq_error;
     }
     
-    n -> seq_len = -1;
+    n -> seq_len = -2;
     
 }
 
