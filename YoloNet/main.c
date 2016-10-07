@@ -64,8 +64,8 @@ int main(int argc, const char * argv[]) {
 //    print_neuron(n);
 //    free_neuron(n);
     
-    int layers[] = {2, 2};
-    int num_layers = 2;
+    int layers[] = {10, 10, 10, 10};
+    int num_layers = 4;
     int num_inputs = 2;
     int num_outputs = 1;
     Neural_Net* net = mk_deep_net(num_inputs, num_outputs, num_layers, layers);

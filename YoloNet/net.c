@@ -149,15 +149,16 @@ scalar* activate_net(Neural_Net* net, scalar* input, int best) {
         int nodes_per_level = net->nodes_per_level[level_i];
         scalar* new_in_outs = emalloc(sizeof(scalar) * nodes_per_level);
         
-        scalar* ins;
-        if (in_outs) {
-            ins = in_outs;
-        } else { // input level
-            ins = input;
+        int input_level = (in_outs == NULL);
+        if (input_level) {
+            in_outs = emalloc(sizeof(scalar) * 1);
         }
         for (int i = 0; i < nodes_per_level; i++) {
+            if (input_level) {
+                in_outs[0] = input[i];
+            }
             Neuron* n = net->levels[level_i][i]->neuron;
-            scalar out = activate_neuron(n, ins, best);
+            scalar out = activate_neuron(n, in_outs, best);
             new_in_outs[i] = out;
         }
         
