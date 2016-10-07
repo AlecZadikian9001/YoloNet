@@ -15,7 +15,8 @@
 #include "neuron.h"
 
 /* defaults */
-#define DEFAULT_LEARNING_RATE (0.5)
+#define DEFAULT_LEARNING_RATE (0.10)
+#define DEFAULT_BACKPROP_RATE (0.5)
 #define DEFAULT_RAND_RATE (0.01)
 #define DEFAULT_RAND_START (-10)
 #define DEFAULT_RAND_END (10)
@@ -38,6 +39,7 @@ Neuron* mk_neuron(int dimension, scalar (*func)(scalar), scalar (*dfunc)(scalar)
     neuron->seq_len = -1;
     
     neuron->learning_rate = DEFAULT_LEARNING_RATE;
+    neuron->learning_rate = DEFAULT_BACKPROP_RATE;
     neuron->rand_rate = DEFAULT_RAND_RATE;
     neuron->w_rand_start = DEFAULT_RAND_START;
     neuron->w_rand_end = DEFAULT_RAND_END;
@@ -45,6 +47,7 @@ Neuron* mk_neuron(int dimension, scalar (*func)(scalar), scalar (*dfunc)(scalar)
     neuron->b_rand_end = DEFAULT_RAND_END;
     
     neuron->dimension = dimension;
+    neuron->backprop = emalloc(sizeof(scalar) * dimension);
     neuron->weights = emalloc(sizeof(scalar) * dimension);
     neuron->best_weights = emalloc(sizeof(scalar) * dimension);
     neuron->biases = emalloc(sizeof(scalar) * dimension);
@@ -111,7 +114,10 @@ void begin_neuron_sequence(Neuron* n) {
     n->sum_sq_error = 0;
 }
 
-/* try input on neuron with given "correct" output, and train for one sequence item */
+/* 
+ try input on neuron with given "correct" output, and train for one sequence item
+ set the "correct" values to propogate to inputs
+ */
 void train_neuron(Neuron* n, scalar* input, scalar output) {
     
     if (n->seq_len < 0) {
@@ -135,6 +141,7 @@ void train_neuron(Neuron* n, scalar* input, scalar output) {
         // delta = 2 * error * n->dfunc(input[i]) * input[i]; // ∂E^2/dW_i
         // (new W_i) = (old W_i) - (learning rate) * ∂E^2/dW_i
         n->weights[i] = n->weights[i] - n->learning_rate * (2 * error * n->dfunc(input[i]) * input[i]);
+        n->backprop[i] = input[i] - n->backprop_rate * (2 * error * n->dfunc(input[i]) * input[i]);
     }
     
     n->sum_sq_error += error * error;

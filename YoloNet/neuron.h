@@ -23,6 +23,7 @@ typedef struct {
     
     // vect0rz
     int dimension; // number of weights
+    scalar* backprop; // backprop values (populated after a training iteration)
     scalar* weights; // weights to be tuned
     scalar* best_weights; // best weights found so far
     scalar* biases; // biases to be tuned (same number as number of weights)
@@ -30,6 +31,7 @@ typedef struct {
     
     // stuff to tune
     scalar learning_rate; // learning rate
+    scalar backprop_rate; // backpropogation rate
     scalar rand_rate; // chance of randomizing
     scalar w_rand_start; // start of random weight
     scalar w_rand_end; // end of random weight
