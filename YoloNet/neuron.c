@@ -40,7 +40,7 @@ Neuron* mk_neuron(int dimension, scalar (*func)(scalar), scalar (*dfunc)(scalar)
     neuron->seq_len = -1;
     
     neuron->learning_rate = DEFAULT_LEARNING_RATE;
-    neuron->learning_rate = DEFAULT_BACKPROP_RATE;
+    neuron->backprop_rate = DEFAULT_BACKPROP_RATE;
     neuron->rand_rate = DEFAULT_RAND_RATE;
     neuron->w_rand_start = DEFAULT_RAND_START;
     neuron->w_rand_end = DEFAULT_RAND_END;
@@ -143,8 +143,10 @@ void train_neuron(Neuron* n, scalar* input, scalar output) {
     for (int i = 0; i < n->dimension; i++) {
         // delta = 2 * error * n->dfunc(input[i]) * input[i]; // ∂E^2/dW_i
         // (new W_i) = (old W_i) - (learning rate) * ∂E^2/dW_i
-        n->weights[i] = n->weights[i] - (n->learning_rate * 2 * error * n->dfunc(input[i]) * input[i]);
-        n->backprop[i] = input[i] - (n->backprop_rate * 2 * error * n->dfunc(input[i])); // just ∂E^2/∂I_i
+        scalar new_weight = n->weights[i] - (n->learning_rate * 2 * error * n->dfunc(input[i]) * input[i]);
+        scalar new_backprop = input[i] - (n->backprop_rate * 2 * error * n->dfunc(input[i])); // just ∂E^2/∂I_i
+        n->weights[i] = new_weight;
+        n->backprop[i] = new_backprop;
     }
     
     n->sum_sq_error += error * error;
@@ -156,7 +158,7 @@ void finish_neuron_sequence(Neuron* n) {
     if (n->seq_len <= 0) {
         return;
     }
-    VERBOSE("Finishing neuron sequence len %d\n", n->seq_len);
+    //VERBOSE("Finishing neuron sequence len %d\n", n->seq_len);
     
     /* get avg sq error */
     scalar avg_sq_error = n->sum_sq_error / n->seq_len;
@@ -164,10 +166,10 @@ void finish_neuron_sequence(Neuron* n) {
     /* update best */
     if (n->virgin || avg_sq_error < n->best_sq_error) {
         if (n->virgin) {
-            TRACE("Neuron was virgin; set avg E^2 to %f\n", avg_sq_error);
+            //TRACE("Neuron was virgin; set avg E^2 to %f\n", avg_sq_error);
             n->virgin = 0;
         } else {
-            TRACE("Improved avg E^2 from %f to %f\n", n->best_sq_error, avg_sq_error);
+            //TRACE("Improved avg E^2 from %f to %f\n", n->best_sq_error, avg_sq_error);
         }
         memcpy(n->best_weights, n->weights, sizeof(scalar) * n->dimension);
         memcpy(n->best_biases, n->biases, sizeof(scalar) * n->dimension);

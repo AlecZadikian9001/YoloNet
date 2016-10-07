@@ -11,6 +11,11 @@
 #include "net.h"
 #include "neuron.h"
 
+#define NET_W_START (-1)
+#define NET_W_END (-NET_W_START)
+#define NET_B_START NET_W_START
+#define NET_B_END NET_W_END
+
 struct Neural_Node {
     Neuron* neuron; // NULL if net input
     int index; // index within layer
@@ -53,9 +58,16 @@ Neural_Net* mk_deep_net(int num_inputs, int num_outputs, int num_layers, int* la
     /* input layer */
     Neural_Node** inputs = emalloc(sizeof(Neural_Node*) * num_inputs);
     for (int i = 0; i < num_inputs; i++) {
-        Neuron* in = mk_neuron(1, &neuron_func_id, &neuron_dfunc_id);
-        randomize_neuron(in);
-        Neural_Node* in_node = mk_neural_node(in, i, 0, NULL, layers[0], NULL);
+        Neuron* n = mk_neuron(1, &neuron_func_id, &neuron_dfunc_id);
+        
+        n->weights[0] = 1.0;
+        n->biases[0] = 0.0;
+        n->b_rand_start = NET_B_START;
+        n->b_rand_end = NET_B_END;
+        n->w_rand_start = NET_W_START;
+        n->w_rand_end = NET_W_END;
+        
+        Neural_Node* in_node = mk_neural_node(n, i, 0, NULL, layers[0], NULL);
         inputs[i] = in_node;
     }
     levels[0] = inputs;
@@ -71,11 +83,17 @@ Neural_Net* mk_deep_net(int num_inputs, int num_outputs, int num_layers, int* la
         if (i < num_layers - 1) {
             next_num_nodes = layers[i+1];
         } else {
-            next_num_nodes = 0;
+            next_num_nodes = num_outputs;
         }
         Neural_Node** nodes = emalloc(sizeof(Neural_Node*) * num_nodes);
         for (int j = 0; j < num_nodes; j++) {
             Neuron* n = mk_neuron(last_num_nodes, &neuron_func_tanh, &neuron_dfunc_tanh);
+            
+            n->b_rand_start = NET_B_START;
+            n->b_rand_end = NET_B_END;
+            n->w_rand_start = NET_W_START;
+            n->w_rand_end = NET_W_END;
+            
             randomize_neuron(n);
             Neural_Node* nn = mk_neural_node(n, j, last_num_nodes, last_nodes, next_num_nodes, NULL);
             nodes[j] = nn;
@@ -96,7 +114,14 @@ Neural_Net* mk_deep_net(int num_inputs, int num_outputs, int num_layers, int* la
     Neural_Node** outputs = emalloc(sizeof(Neural_Node*) * num_outputs);
     for (int i = 0; i < num_outputs; i++) {
         Neuron* n = mk_neuron(1, &neuron_func_id, &neuron_dfunc_id);
-        randomize_neuron(n);
+        
+        n->weights[0] = 1.0;
+        n->biases[0] = 0.0;
+        n->b_rand_start = NET_B_START;
+        n->b_rand_end = NET_B_END;
+        n->w_rand_start = NET_W_START;
+        n->w_rand_end = NET_W_END;
+        
         Neural_Node* nn = mk_neural_node(n, i, last_num_nodes, last_nodes, 0, NULL);
         outputs[i] = nn;
     }
@@ -124,14 +149,16 @@ scalar* activate_net(Neural_Net* net, scalar* input, int best) {
         int nodes_per_level = net->nodes_per_level[level_i];
         scalar* new_in_outs = emalloc(sizeof(scalar) * nodes_per_level);
         
+        scalar* ins;
+        if (in_outs) {
+            ins = in_outs;
+        } else { // input level
+            ins = input;
+        }
         for (int i = 0; i < nodes_per_level; i++) {
-            scalar* ins;
-            if (in_outs) {
-                ins = in_outs;
-            } else { // input level
-                ins = input;
-            }
-            new_in_outs[i] = activate_neuron(net->levels[level_i][i]->neuron, ins, best);
+            Neuron* n = net->levels[level_i][i]->neuron;
+            scalar out = activate_neuron(n, ins, best);
+            new_in_outs[i] = out;
         }
         
         
