@@ -35,6 +35,7 @@ void free_neuron(Neuron* neuron) {
 
 Neuron* mk_neuron(int dimension, scalar (*func)(scalar), scalar (*dfunc)(scalar)) {
     Neuron* neuron = emalloc(sizeof(Neuron));
+    neuron->last_output = NAN;
     neuron->virgin = 1;
     neuron->seq_len = -1;
     
@@ -105,7 +106,9 @@ scalar activate_neuron(Neuron* n, scalar* input, int best) { // best = 0 if use 
     for (int i = 0; i < n->dimension; i++) {
         sum += biases[i] + weights[i] * input[i];
     }
-    return n->func(sum);
+    scalar output = n->func(sum);
+    n->last_output = output;
+    return output;
 }
 
 /* begin new sequence */

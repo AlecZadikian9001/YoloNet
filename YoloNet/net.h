@@ -15,8 +15,13 @@
 typedef struct Neural_Node Neural_Node;
 
 typedef struct {
+    int num_inputs;
+    Neural_Node** input_nodes;
     int num_outputs;
     Neural_Node** output_nodes;
+    int num_levels; // input to output
+    int* nodes_per_level; // input to output
+    Neural_Node*** levels; // input to output
 } Neural_Net;
 
 Neural_Net* mk_deep_net(int num_inputs, int num_outputs, int num_layers, int* layers);

@@ -46,6 +46,10 @@ void free_neural_node(Neural_Node* nn) {
 /* return output nodes */
 Neural_Net* mk_deep_net(int num_inputs, int num_outputs, int num_layers, int* layers) {
     
+    int num_levels = num_layers + 2;
+    int* nodes_per_level = emalloc(sizeof(int) * num_levels);
+    Neural_Node*** levels = emalloc(sizeof(Neural_Node**) * num_levels);
+    
     /* input layer */
     Neural_Node** inputs = emalloc(sizeof(Neural_Node*) * num_inputs);
     for (int i = 0; i < num_inputs; i++) {
@@ -54,6 +58,8 @@ Neural_Net* mk_deep_net(int num_inputs, int num_outputs, int num_layers, int* la
         Neural_Node* in_node = mk_neural_node(in, i, 0, NULL, layers[0], NULL);
         inputs[i] = in_node;
     }
+    levels[0] = inputs;
+    nodes_per_level[0] = num_inputs;
     
     /* hidden layers */
     Neural_Node** last_nodes = inputs;
@@ -79,6 +85,9 @@ Neural_Net* mk_deep_net(int num_inputs, int num_outputs, int num_layers, int* la
             last_nodes[j]->outputs = nodes;
         }
         
+        levels[i + 1] = nodes;
+        nodes_per_level[i + 1] = num_nodes;
+        
         last_num_nodes = num_nodes;
         last_nodes = nodes;
     }
@@ -94,81 +103,111 @@ Neural_Net* mk_deep_net(int num_inputs, int num_outputs, int num_layers, int* la
     for (int j = 0; j < last_num_nodes; j++) {
         last_nodes[j]->outputs = outputs;
     }
+    levels[num_layers + 1] = outputs;
+    nodes_per_level[num_layers + 1] = num_outputs;
     
     Neural_Net* ret = emalloc(sizeof(Neural_Net));
     ret->num_outputs = num_outputs;
     ret->output_nodes = outputs;
+    ret->num_inputs = num_inputs;
+    ret->input_nodes = inputs;
+    ret->levels = levels;
+    ret->nodes_per_level = nodes_per_level;
+    ret->num_levels = num_levels;
     
     return ret;
 }
 
-scalar activate_net_helper(Neural_Node* nn, scalar* input, int best) {
-    scalar* new_input;
-    if (!nn->inputs) { // input node
-        new_input = input;
-    } else { // internal or output node
-        scalar prev_input[nn->num_inputs];
-        for (int i = 0; i < nn->num_inputs; i++) {
-            prev_input[i] = activate_net_helper(nn->inputs[i], input, best);
+scalar* activate_net(Neural_Net* net, scalar* input, int best) {
+    scalar* in_outs = NULL;
+    for (int level_i = 0; level_i < net->num_levels; level_i++) {
+        int nodes_per_level = net->nodes_per_level[level_i];
+        scalar* new_in_outs = emalloc(sizeof(scalar) * nodes_per_level);
+        
+        for (int i = 0; i < nodes_per_level; i++) {
+            scalar* ins;
+            if (in_outs) {
+                ins = in_outs;
+            } else { // input level
+                ins = input;
+            }
+            new_in_outs[i] = activate_neuron(net->levels[level_i][i]->neuron, ins, best);
         }
-        new_input = prev_input;
-    }
-    return activate_neuron(nn->neuron, new_input, best);
-}
-
-scalar* activate_net(Neural_Net* net, scalar* input, int best) { // TODO memoize with hashmap
-    scalar* outputs = emalloc(sizeof(scalar) * net->num_outputs);
-    for (int i = 0; i < net->num_outputs; i++) {
-        Neural_Node* nn = net->output_nodes[i];
-        scalar nn_output = activate_net_helper(nn, input, best);
-        outputs[i] = nn_output;
-    }
-    return outputs;
-}
-
-void train_net_helper(Neural_Node* nn, scalar* input, scalar output) {
-    scalar neuron_input[nn->num_inputs];
-    for (int i = 0; i < nn->num_inputs; i++) {
-        neuron_input[i] = activate_net_helper(nn->inputs[i], input, 0);
-    }
-    
-    if (nn->outputs) { // non-output node
-        for (int i = 0; i < nn->num_outputs; i++) {
-            train_neuron(nn->neuron, neuron_input, nn->outputs[i]->neuron->backprop[nn->index]);
+        
+        
+        if (in_outs) {
+            free(in_outs);
         }
-    } else { // output node
-        train_neuron(nn->neuron, neuron_input, output);
+        in_outs = new_in_outs;
     }
-    
-    for (int i = 0; i < nn->num_inputs; i++) {
-        train_net_helper(nn->inputs[i], input, output);
+    return in_outs;
+}
+
+// TODO currently assumes every node connects to every other node in adjacent levels
+void train_net_helper(Neural_Net* net, scalar* input, scalar* outputs) {
+    for (int level_i = net->num_levels; level_i >= 0; level_i--) {
+        int nodes_per_level = net->nodes_per_level[level_i];
+        
+        scalar* ins;
+        if (level_i > 0) {
+            int nppl = net->nodes_per_level[level_i - 1];
+            ins = emalloc(sizeof(scalar) * nppl);
+            for (int i = 0; i < nppl; i++) {
+                ins[i] = net->levels[level_i - i][i]->neuron->last_output;
+            }
+        } else { // input
+            ins = input;
+        }
+        
+        for (int i = 0; i < nodes_per_level; i++) {
+            Neural_Node* nn = net->levels[level_i][i];
+            
+            scalar* parent_output;
+            int num_parents;
+            if (level_i != net->num_levels) { // if not output
+                num_parents = nn->num_outputs;
+                parent_output = emalloc(sizeof(scalar) * num_parents);
+                for (int parent = 0; parent < nn->num_outputs; parent++) {
+                    parent_output[parent] = nn->outputs[parent]->neuron->backprop[nn->index];
+                }
+            } else { // if output
+                num_parents = 1;
+                parent_output = emalloc(sizeof(scalar) * num_parents);
+                parent_output[0] = outputs[i];
+            }
+            
+            for (int parent = 0; parent < num_parents; parent++) {
+                train_neuron(nn->neuron, ins, parent_output[parent]);
+            }
+            free(parent_output);
+        }
+        
+        if (ins != input) {
+            free(ins);
+        }
     }
 }
 
-void net_func_helper(Neural_Node* nn, void (*func)(Neuron*)) {
-    func(nn->neuron);
-    for (int i = 0; i < nn->num_inputs; i++) {
-        net_func_helper(nn->inputs[i], func);
+void net_func(Neural_Net* net, void (*func)(Neuron*)) {
+    for (int level_i = 0; level_i < net->num_levels; level_i++) {
+        int nodes_per_level = net->nodes_per_level[level_i];
+        for (int i = 0; i < nodes_per_level; i++) {
+            func(net->levels[level_i][i]->neuron);
+        }
     }
 }
 
 void begin_net_sequence(Neural_Net* net) {
-    for (int i = 0; i < net->num_outputs; i++) {
-        net_func_helper(net->output_nodes[i], &begin_neuron_sequence);
-    }
+    net_func(net, &begin_neuron_sequence);
 }
 
 void train_net(Neural_Net* net, int num_trains, scalar** inputs, scalar** outputs) {
     for (int train_i = 0; train_i < num_trains; train_i++) {
-        for (int output_i = 0; output_i < net->num_outputs; output_i++) {
-            train_net_helper(net->output_nodes[output_i], inputs[train_i], outputs[train_i][output_i]);
-        }
+        train_net_helper(net, inputs[train_i], outputs[train_i]);
     }
 }
 
 void finish_net_sequence(Neural_Net* net) {
-    for (int i = 0; i < net->num_outputs; i++) {
-        net_func_helper(net->output_nodes[i], &finish_neuron_sequence);
-    }
+    net_func(net, &finish_neuron_sequence);
 }
 

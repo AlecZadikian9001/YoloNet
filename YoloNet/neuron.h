@@ -39,6 +39,7 @@ typedef struct {
     scalar b_rand_end; // end of random bias
     
     // l3rning st4te
+    scalar last_output; // last output produced
     scalar best_sq_error; // best average of E^2 found thus far
     scalar sum_sq_error; // sum of E^2 for the current sequence
     int seq_len; // how many iterations within the current sequence
