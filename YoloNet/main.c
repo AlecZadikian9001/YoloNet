@@ -66,13 +66,9 @@ int main(int argc, const char * argv[]) {
     
     int layers[] = {10, 10, 10};
     int num_layers = 3;
-    scalar input[] = {4.5, -2.4};
     int num_inputs = 2;
     int num_outputs = 1;
     Neural_Net* net = mk_deep_net(num_inputs, num_outputs, num_layers, layers);
-    scalar* outputs = activate_net(net, input, 0);
-    printf("output: %f\n", outputs[0]);
-    free(outputs);
     
     scalar in1[] = {0.0, 1.0};
     scalar in2[] = {1.0, 0.0};
@@ -87,16 +83,25 @@ int main(int argc, const char * argv[]) {
     scalar* ins[] = {in1, in2, in3, in4};
     scalar* outs[] = {out1, out2, out3, out4};
     
-    begin_net_sequence(net);
+    scalar* outputs;
     
-    for (int i = 0; i < 100; i++) {
-        train_net(net, 4, ins, outs);
+    for (int i = 0; i < 4; i++) {
+        outputs = activate_net(net, ins[i], 1);
+        printf("(%f, %f): %f\n", ins[i][0], ins[i][1], outputs[0]);
+        free(outputs);
     }
     
-    finish_net_sequence(net);
+    for (int i = 0; i < 100; i++) {
+        begin_net_sequence(net);
+        train_net(net, 4, ins, outs);
+        finish_net_sequence(net);
+    }
     
-    outputs = activate_net(net, in3, 1);
-    printf("output: %f\n", outputs[0]);
+    for (int i = 0; i < 4; i++) {
+        outputs = activate_net(net, ins[i], 1);
+        printf("(%f, %f): %f\n", ins[i][0], ins[i][1], outputs[0]);
+        free(outputs);
+    }
     
     return 0;
 }

@@ -145,7 +145,7 @@ scalar* activate_net(Neural_Net* net, scalar* input, int best) {
 
 // TODO currently assumes every node connects to every other node in adjacent levels
 void train_net_helper(Neural_Net* net, scalar* input, scalar* outputs) {
-    for (int level_i = net->num_levels; level_i >= 0; level_i--) {
+    for (int level_i = net->num_levels - 1; level_i >= 0; level_i--) {
         int nodes_per_level = net->nodes_per_level[level_i];
         
         scalar* ins;
@@ -153,7 +153,8 @@ void train_net_helper(Neural_Net* net, scalar* input, scalar* outputs) {
             int nppl = net->nodes_per_level[level_i - 1];
             ins = emalloc(sizeof(scalar) * nppl);
             for (int i = 0; i < nppl; i++) {
-                ins[i] = net->levels[level_i - i][i]->neuron->last_output;
+                Neural_Node* last_nn = net->levels[level_i - 1][i];
+                ins[i] = last_nn->neuron->last_output;
             }
         } else { // input
             ins = input;
@@ -164,7 +165,7 @@ void train_net_helper(Neural_Net* net, scalar* input, scalar* outputs) {
             
             scalar* parent_output;
             int num_parents;
-            if (level_i != net->num_levels) { // if not output
+            if (level_i != net->num_levels - 1) { // if not output
                 num_parents = nn->num_outputs;
                 parent_output = emalloc(sizeof(scalar) * num_parents);
                 for (int parent = 0; parent < nn->num_outputs; parent++) {
