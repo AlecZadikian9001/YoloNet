@@ -11,10 +11,11 @@
 #include "net.h"
 #include "neuron.h"
 
-#define NET_W_START (-1)
+#define NET_W_START (-1.5)
 #define NET_W_END (-NET_W_START)
-#define NET_B_START NET_W_START
-#define NET_B_END NET_W_END
+#define NET_B_START -0.5
+#define NET_B_END (-NET_B_START)
+#define NET_RAND_RATE 0.01
 
 struct Neural_Node {
     Neuron* neuron; // NULL if net input
@@ -62,10 +63,7 @@ Neural_Net* mk_deep_net(int num_inputs, int num_outputs, int num_layers, int* la
         
         n->weights[0] = 1.0;
         n->biases[0] = 0.0;
-        n->b_rand_start = NET_B_START;
-        n->b_rand_end = NET_B_END;
-        n->w_rand_start = NET_W_START;
-        n->w_rand_end = NET_W_END;
+        n->rand_rate = 0;
         
         Neural_Node* in_node = mk_neural_node(n, i, 0, NULL, layers[0], NULL);
         inputs[i] = in_node;
@@ -93,6 +91,7 @@ Neural_Net* mk_deep_net(int num_inputs, int num_outputs, int num_layers, int* la
             n->b_rand_end = NET_B_END;
             n->w_rand_start = NET_W_START;
             n->w_rand_end = NET_W_END;
+            n->rand_rate = NET_RAND_RATE;
             
             randomize_neuron(n);
             Neural_Node* nn = mk_neural_node(n, j, last_num_nodes, last_nodes, next_num_nodes, NULL);
@@ -117,10 +116,7 @@ Neural_Net* mk_deep_net(int num_inputs, int num_outputs, int num_layers, int* la
         
         n->weights[0] = 1.0;
         n->biases[0] = 0.0;
-        n->b_rand_start = NET_B_START;
-        n->b_rand_end = NET_B_END;
-        n->w_rand_start = NET_W_START;
-        n->w_rand_end = NET_W_END;
+        n->rand_rate = 0;
         
         Neural_Node* nn = mk_neural_node(n, i, last_num_nodes, last_nodes, 0, NULL);
         outputs[i] = nn;
