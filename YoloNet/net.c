@@ -11,11 +11,11 @@
 #include "net.h"
 #include "neuron.h"
 
-#define NET_W_START (-1.5)
+#define NET_W_START (-2.0)
 #define NET_W_END (-NET_W_START)
-#define NET_B_START -0.5
+#define NET_B_START -2.0
 #define NET_B_END (-NET_B_START)
-#define NET_RAND_RATE 0.01
+#define NET_RAND_RATE 0.1
 #define NET_LEARN_RATE 0.01
 #define NET_BACKPROP_RATE 0.8
 
@@ -247,8 +247,10 @@ void begin_net_sequence(Neural_Net* net) {
 }
 
 void train_net(Neural_Net* net, int num_trains, scalar** inputs, scalar** outputs) {
+    scalar* outs;
     for (int train_i = 0; train_i < num_trains; train_i++) {
-        activate_net(net, inputs[train_i], 0);
+        outs = activate_net(net, inputs[train_i], 0);
+        free(outs);
         train_net_helper(net, inputs[train_i], outputs[train_i]);
     }
 }

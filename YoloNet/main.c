@@ -91,13 +91,19 @@ int main(int argc, const char * argv[]) {
         free(outputs);
     }
     
-    for (int i = 0; i < 10000; i++) {
+    scalar error;
+    for (int i = 0; 1; i++) {
         begin_net_sequence(net);
         train_net(net, 4, ins, outs);
         finish_net_sequence(net);
+        error = net_best_error(net);
+        if (error < 0.1) {
+            VERBOSE("%d iterations\n", i);
+            break;
+        }
     }
     
-    scalar error = net_best_error(net);
+    error = net_best_error(net);
     VERBOSE("Net error: %f\n", error);
     
     for (int i = 0; i < 4; i++) {
