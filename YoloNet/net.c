@@ -16,6 +16,8 @@
 #define NET_B_START -0.5
 #define NET_B_END (-NET_B_START)
 #define NET_RAND_RATE 0.01
+#define NET_LEARN_RATE 0.01
+#define NET_BACKPROP_RATE 0.8
 
 struct Neural_Node {
     Neuron* neuron; // NULL if net input
@@ -59,11 +61,13 @@ Neural_Net* mk_deep_net(int num_inputs, int num_outputs, int num_layers, int* la
     /* input layer */
     Neural_Node** inputs = emalloc(sizeof(Neural_Node*) * num_inputs);
     for (int i = 0; i < num_inputs; i++) {
-        Neuron* n = mk_neuron(1, &neuron_func_id, &neuron_dfunc_id);
+        Neuron* n = mk_neuron(1, &neuron_func_tanh, &neuron_dfunc_tanh);
         
         n->weights[0] = 1.0;
         n->biases[0] = 0.0;
         n->rand_rate = 0;
+        n->learning_rate = NET_LEARN_RATE;
+        n->backprop_rate = NET_BACKPROP_RATE;
         
         Neural_Node* in_node = mk_neural_node(n, i, 0, NULL, layers[0], NULL);
         inputs[i] = in_node;
@@ -85,13 +89,15 @@ Neural_Net* mk_deep_net(int num_inputs, int num_outputs, int num_layers, int* la
         }
         Neural_Node** nodes = emalloc(sizeof(Neural_Node*) * num_nodes);
         for (int j = 0; j < num_nodes; j++) {
-            Neuron* n = mk_neuron(last_num_nodes, &neuron_func_tanh, &neuron_dfunc_tanh);
+            Neuron* n = mk_neuron(last_num_nodes, &neuron_func_id, &neuron_dfunc_id);
             
             n->b_rand_start = NET_B_START;
             n->b_rand_end = NET_B_END;
             n->w_rand_start = NET_W_START;
             n->w_rand_end = NET_W_END;
             n->rand_rate = NET_RAND_RATE;
+            n->learning_rate = NET_LEARN_RATE;
+            n->backprop_rate = NET_BACKPROP_RATE;
             
             randomize_neuron(n);
             Neural_Node* nn = mk_neural_node(n, j, last_num_nodes, last_nodes, next_num_nodes, NULL);
@@ -117,6 +123,8 @@ Neural_Net* mk_deep_net(int num_inputs, int num_outputs, int num_layers, int* la
         n->weights[0] = 1.0;
         n->biases[0] = 0.0;
         n->rand_rate = 0;
+        n->learning_rate = NET_LEARN_RATE;
+        n->backprop_rate = NET_BACKPROP_RATE;
         
         Neural_Node* nn = mk_neural_node(n, i, last_num_nodes, last_nodes, 0, NULL);
         outputs[i] = nn;
@@ -178,7 +186,8 @@ void train_net_helper(Neural_Net* net, scalar* input, scalar* outputs) {
             ins = emalloc(sizeof(scalar) * nppl);
             for (int i = 0; i < nppl; i++) {
                 Neural_Node* last_nn = net->levels[level_i - 1][i];
-                ins[i] = last_nn->neuron->last_output;
+                scalar last_output = last_nn->neuron->last_output;
+                ins[i] = last_output;
             }
         } else { // input
             ins = input;
@@ -222,12 +231,24 @@ void net_func(Neural_Net* net, void (*func)(Neuron*)) {
     }
 }
 
+scalar net_best_error(Neural_Net* net) {
+    scalar error = 0;
+    for (int level_i = 0; level_i < net->num_levels; level_i++) {
+        int nodes_per_level = net->nodes_per_level[level_i];
+        for (int i = 0; i < nodes_per_level; i++) {
+            error += net->levels[level_i][i]->neuron->best_sq_error;
+        }
+    }
+    return error;
+}
+
 void begin_net_sequence(Neural_Net* net) {
     net_func(net, &begin_neuron_sequence);
 }
 
 void train_net(Neural_Net* net, int num_trains, scalar** inputs, scalar** outputs) {
     for (int train_i = 0; train_i < num_trains; train_i++) {
+        activate_net(net, inputs[train_i], 0);
         train_net_helper(net, inputs[train_i], outputs[train_i]);
     }
 }

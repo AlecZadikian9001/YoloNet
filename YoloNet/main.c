@@ -64,8 +64,8 @@ int main(int argc, const char * argv[]) {
 //    print_neuron(n);
 //    free_neuron(n);
     
-    int layers[] = {6, 6, 6};
-    int num_layers = 3;
+    int layers[] = {10, 10};
+    int num_layers = 2;
     int num_inputs = 2;
     int num_outputs = 1;
     Neural_Net* net = mk_deep_net(num_inputs, num_outputs, num_layers, layers);
@@ -91,11 +91,14 @@ int main(int argc, const char * argv[]) {
         free(outputs);
     }
     
-    for (int i = 0; i < 1000; i++) {
+    for (int i = 0; i < 10000; i++) {
         begin_net_sequence(net);
         train_net(net, 4, ins, outs);
         finish_net_sequence(net);
     }
+    
+    scalar error = net_best_error(net);
+    VERBOSE("Net error: %f\n", error);
     
     for (int i = 0; i < 4; i++) {
         outputs = activate_net(net, ins[i], 1);
