@@ -9,14 +9,14 @@
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "YoloNet/net.c"
-            timestampString = "497607616.057921"
+            filePath = "YoloNet/neuron.c"
+            timestampString = "497718111.605724"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "190"
-            endingLineNumber = "190"
-            landmarkName = "train_net_helper()"
-            landmarkType = "9">
+            startingLineNumber = "143"
+            endingLineNumber = "143"
+            landmarkName = "train_neuron()"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -25,14 +25,14 @@
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "YoloNet/net.c"
-            timestampString = "497607616.057921"
+            filePath = "YoloNet/neuron.c"
+            timestampString = "497718109.028345"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "214"
-            endingLineNumber = "214"
-            landmarkName = "train_net_helper()"
-            landmarkType = "9">
+            startingLineNumber = "144"
+            endingLineNumber = "144"
+            landmarkName = "train_neuron()"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

@@ -139,12 +139,17 @@ void train_neuron(Neuron* n, scalar* input, scalar output) {
     // ∂E^2/dW_i = ∂E^2/∂I_i * ∂I_i/∂W_i
     // ∂I_i/∂W_i = O_i
     // ∂E^2/∂I_i = 2E * ∂F(I_i)/∂(I_i)
-    scalar error = activate_neuron(n, input, 0) - output;
+    scalar test = activate_neuron(n, input, 0);
+    scalar error = test - output;
     for (int i = 0; i < n->dimension; i++) {
         // delta = 2 * error * n->dfunc(input[i]) * input[i]; // ∂E^2/dW_i
         // (new W_i) = (old W_i) - (learning rate) * ∂E^2/dW_i
         scalar new_weight = n->weights[i] - (n->learning_rate * 2 * error * n->dfunc(input[i]) * input[i]);
-        scalar new_backprop = input[i] - (n->backprop_rate * 2 * error * n->dfunc(input[i])); // just ∂E^2/∂I_i
+        scalar new_backprop = input[i] - (n->backprop_rate * 2 * error * n->dfunc(input[i]) * input[i]); // just ∂E^2/∂I_i
+        if (new_weight != new_weight || new_backprop != new_backprop) {
+            perror("new weight or backprop = NAN");
+            exit(2);
+        }
         n->weights[i] = new_weight;
         n->backprop[i] = new_backprop;
     }

@@ -22,6 +22,7 @@ typedef struct {
     int num_levels; // input to output
     int* nodes_per_level; // input to output
     Neural_Node*** levels; // input to output
+    scalar error; // worst-case squared error
 } Neural_Net;
 
 Neural_Net* mk_deep_net(int num_inputs, int num_outputs, int num_layers, int* layers);
