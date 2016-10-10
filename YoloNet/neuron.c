@@ -54,6 +54,22 @@ Neuron* mk_neuron(int dimension, scalar (*func)(scalar), scalar (*dfunc)(scalar)
     return neuron;
 }
 
+Neuron* clone_neuron(Neuron* n) {
+    Neuron* ret = emalloc(sizeof(Neuron));
+    
+    memcpy(ret, n, sizeof(Neuron));
+    
+    ret->backprop = emalloc(sizeof(scalar) * n->dimension);
+    ret->weights = emalloc(sizeof(scalar) * n->dimension);
+    ret->biases = emalloc(sizeof(scalar) * n->dimension);
+    
+    memcpy(ret->backprop, n->backprop, sizeof(scalar) * n->dimension);
+    memcpy(ret->weights, n->weights, sizeof(scalar) * n->dimension);
+    memcpy(ret->biases, n->biases, sizeof(scalar) * n->dimension);
+    
+    return ret;
+}
+
 void randomize_neuron(Neuron* n) {
     scalar r;
     int mod = 0;

@@ -50,8 +50,35 @@ void free_neural_node(Neural_Node* nn) {
     free(nn);
 }
 
-scalar* save_params() {
+Neuron** save_net_neurons(Neural_Net* net) {
+    int neuron_count = 0;
+    for (int level_i = 0; level_i < net->num_levels; level_i++) {
+        neuron_count += net->nodes_per_level[level_i];
+    }
     
+    Neuron** ret = emalloc(sizeof(Neuron**) * neuron_count);
+    
+    int i = 0;
+    for (int level_i = 0; level_i < net->num_levels; level_i++) {
+        for (int node_i = 0; node_i < net->nodes_per_level[level_i]; node_i++) {
+            Neuron* n = clone_neuron(net->levels[level_i][node_i]->neuron);
+            ret[i] = n;
+            i += 1;
+        }
+    }
+    
+    return ret;
+}
+
+void swap_net_neurons(Neural_Net* net, Neuron** neurons) {
+    int i = 0;
+    for (int level_i = 0; level_i < net->num_levels; level_i++) {
+        for (int node_i = 0; node_i < net->nodes_per_level[level_i]; node_i++) {
+            neurons[i] = (net->levels[level_i][node_i]->neuron);
+            net->levels[level_i][node_i]->neuron = neurons[i];
+            i += 1;
+        }
+    }
 }
 
 // TODO accept different functions instead of always using tanh

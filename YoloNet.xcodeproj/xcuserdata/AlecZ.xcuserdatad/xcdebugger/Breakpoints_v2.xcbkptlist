@@ -16,7 +16,7 @@
             startingLineNumber = "121"
             endingLineNumber = "121"
             landmarkName = "train_neuron()"
-            landmarkType = "7">
+            landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -32,7 +32,7 @@
             startingLineNumber = "122"
             endingLineNumber = "122"
             landmarkName = "train_neuron()"
-            landmarkType = "7">
+            landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

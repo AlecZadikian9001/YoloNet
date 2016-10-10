@@ -55,7 +55,8 @@ void free_neuron(Neuron* neuron);
 // prints out a neuron's state
 void print_neuron(Neuron* neuron);
 
-
+// deep copies a neuron
+Neuron* clone_neuron(Neuron* n);
 
 /* end */
 
