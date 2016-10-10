@@ -25,10 +25,8 @@ typedef struct {
     int dimension; // number of weights
     scalar* backprop; // backprop values (populated after a training iteration)
     scalar* weights; // weights to be tuned
-    scalar* best_weights; // best weights found so far
     scalar* biases; // biases to be tuned (same number as number of weights)
-    scalar* best_biases; // best biases found so far (corresponds to best_weights)
-    
+
     // stuff to tune
     scalar learning_rate; // learning rate
     scalar backprop_rate; // backpropogation rate
@@ -40,10 +38,6 @@ typedef struct {
     
     // l3rning st4te
     scalar last_output; // last output produced
-    scalar best_sq_error; // best average of E^2 found thus far
-    scalar sum_sq_error; // sum of E^2 for the current sequence
-    int seq_len; // how many iterations within the current sequence
-    int virgin; // 0 = trained, 1 = fresh
     
     // input: return output
     scalar (*func)(scalar);
@@ -61,15 +55,15 @@ void free_neuron(Neuron* neuron);
 // prints out a neuron's state
 void print_neuron(Neuron* neuron);
 
+
+
 /* end */
 
 /* neuron methods */
 
 void randomize_neuron(Neuron* n);
-scalar activate_neuron(Neuron* n, scalar* input, int best);
-void begin_neuron_sequence(Neuron* n);
+scalar activate_neuron(Neuron* n, scalar* input);
 void train_neuron(Neuron* n, scalar* input, scalar output);
-void finish_neuron_sequence(Neuron* n);
     
 /* end */
 

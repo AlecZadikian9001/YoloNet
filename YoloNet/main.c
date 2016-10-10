@@ -108,7 +108,7 @@ int main(int argc, const char * argv[]) {
         }
     }
     
-    error = net_best_error(net);
+    error = net->error;
     VERBOSE("Net error: %f\n", error);
     
     for (int i = 0; i < 4; i++) {

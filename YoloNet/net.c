@@ -50,6 +50,10 @@ void free_neural_node(Neural_Node* nn) {
     free(nn);
 }
 
+scalar* save_params() {
+    
+}
+
 // TODO accept different functions instead of always using tanh
 /* return output nodes */
 Neural_Net* mk_deep_net(int num_inputs, int num_outputs, int num_layers, int* layers) {
@@ -163,7 +167,7 @@ scalar* activate_net(Neural_Net* net, scalar* input, int best) {
                 in_outs[0] = input[i];
             }
             Neuron* n = net->levels[level_i][i]->neuron;
-            scalar out = activate_neuron(n, in_outs, best);
+            scalar out = activate_neuron(n, in_outs);
             new_in_outs[i] = out;
         }
         
@@ -232,21 +236,9 @@ void net_func(Neural_Net* net, void (*func)(Neuron*)) {
     }
 }
 
-scalar net_best_error(Neural_Net* net) {
-    scalar error = 0;
-    int level_i = net->num_levels - 1;
-    //for (int level_i = 0; level_i < net->num_levels; level_i++) {
-        int nodes_per_level = net->nodes_per_level[level_i];
-        for (int i = 0; i < nodes_per_level; i++) {
-            error += net->levels[level_i][i]->neuron->best_sq_error;
-        }
-    //}
-    return error;
-}
-
 void begin_net_sequence(Neural_Net* net) {
-    net_func(net, &begin_neuron_sequence);
     net->error = -1;
+    // TODO
 }
 
 void train_net(Neural_Net* net, int num_trains, scalar** inputs, scalar** outputs) {
@@ -270,6 +262,6 @@ void train_net(Neural_Net* net, int num_trains, scalar** inputs, scalar** output
 }
 
 void finish_net_sequence(Neural_Net* net) {
-    net_func(net, &finish_neuron_sequence);
+    // TODO
 }
 

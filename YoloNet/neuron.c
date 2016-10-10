@@ -27,17 +27,13 @@
 
 void free_neuron(Neuron* neuron) {
     free(neuron->weights);
-    free(neuron->best_weights);
     free(neuron->biases);
-    free(neuron->best_biases);
     free(neuron);
 }
 
 Neuron* mk_neuron(int dimension, scalar (*func)(scalar), scalar (*dfunc)(scalar)) {
     Neuron* neuron = emalloc(sizeof(Neuron));
     neuron->last_output = NAN;
-    neuron->virgin = 1;
-    neuron->seq_len = -1;
     
     neuron->learning_rate = DEFAULT_LEARNING_RATE;
     neuron->backprop_rate = DEFAULT_BACKPROP_RATE;
@@ -50,9 +46,7 @@ Neuron* mk_neuron(int dimension, scalar (*func)(scalar), scalar (*dfunc)(scalar)
     neuron->dimension = dimension;
     neuron->backprop = emalloc(sizeof(scalar) * dimension);
     neuron->weights = emalloc(sizeof(scalar) * dimension);
-    neuron->best_weights = emalloc(sizeof(scalar) * dimension);
     neuron->biases = emalloc(sizeof(scalar) * dimension);
-    neuron->best_biases = emalloc(sizeof(scalar) * dimension);
     
     neuron->func = func;
     neuron->dfunc = dfunc;
@@ -90,17 +84,12 @@ void randomize_neuron(Neuron* n) {
     }
 }
 
-scalar activate_neuron(Neuron* n, scalar* input, int best) { // best = 0 if use current, 1 if use best
+scalar activate_neuron(Neuron* n, scalar* input) {
     scalar* biases;
     scalar* weights;
     
-    if (best) {
-        biases = n->best_biases;
-        weights = n->best_weights;
-    } else { // if !best
-        biases = n->biases;
-        weights = n->weights;
-    }
+    biases = n->biases;
+    weights = n->weights;
     
     scalar sum = 0;
     for (int i = 0; i < n->dimension; i++) {
@@ -111,22 +100,11 @@ scalar activate_neuron(Neuron* n, scalar* input, int best) { // best = 0 if use 
     return output;
 }
 
-/* begin new sequence */
-void begin_neuron_sequence(Neuron* n) {
-    n->seq_len = 0;
-    n->sum_sq_error = 0;
-}
-
 /* 
  try input on neuron with given "correct" output, and train for one sequence item
  set the "correct" values to propogate to inputs
  */
 void train_neuron(Neuron* n, scalar* input, scalar output) {
-    
-    if (n->seq_len < 0) {
-        perror("tried to train neuron outside of sequence");
-        exit(2);
-    }
     
     /* randomization (if triggered) */
     if (n->rand_rate >= ((double) (rand() % RANDOM_GRANULARITY)) / ((double) RANDOM_GRANULARITY)) {
@@ -139,7 +117,7 @@ void train_neuron(Neuron* n, scalar* input, scalar output) {
     // ∂E^2/dW_i = ∂E^2/∂I_i * ∂I_i/∂W_i
     // ∂I_i/∂W_i = O_i
     // ∂E^2/∂I_i = 2E * ∂F(I_i)/∂(I_i)
-    scalar test = activate_neuron(n, input, 0);
+    scalar test = activate_neuron(n, input);
     scalar error = test - output;
     for (int i = 0; i < n->dimension; i++) {
         // delta = 2 * error * n->dfunc(input[i]) * input[i]; // ∂E^2/dW_i
@@ -153,36 +131,6 @@ void train_neuron(Neuron* n, scalar* input, scalar output) {
         n->weights[i] = new_weight;
         n->backprop[i] = new_backprop;
     }
-    
-    n->sum_sq_error += error * error;
-    n->seq_len += 1;
-}
-
-void finish_neuron_sequence(Neuron* n) {
-    
-    if (n->seq_len <= 0) {
-        return;
-    }
-    //VERBOSE("Finishing neuron sequence len %d\n", n->seq_len);
-    
-    /* get avg sq error */
-    scalar avg_sq_error = n->sum_sq_error / n->seq_len;
-    
-    /* update best */
-    if (n->virgin || avg_sq_error < n->best_sq_error) {
-        if (n->virgin) {
-            //TRACE("Neuron was virgin; set avg E^2 to %f\n", avg_sq_error);
-            n->virgin = 0;
-        } else {
-            //TRACE("Improved avg E^2 from %f to %f\n", n->best_sq_error, avg_sq_error);
-        }
-        memcpy(n->best_weights, n->weights, sizeof(scalar) * n->dimension);
-        memcpy(n->best_biases, n->biases, sizeof(scalar) * n->dimension);
-        n->best_sq_error = avg_sq_error;
-    }
-    
-    n -> seq_len = -2;
-    
 }
 
 void print_neuron(Neuron* neuron) { // ik, this code is cancer

@@ -71,8 +71,8 @@
 				E19C4F501DA5B6610008DBF8 /* general.c */,
 				E19C4F4C1DA598300008DBF8 /* neuron.h */,
 				E19C4F4D1DA5983B0008DBF8 /* neuron.c */,
-				E19C4F521DA5D05F0008DBF8 /* net.c */,
 				E19C4F531DA5D05F0008DBF8 /* net.h */,
+				E19C4F521DA5D05F0008DBF8 /* net.c */,
 			);
 			path = YoloNet;
 			sourceTree = "<group>";
@@ -264,6 +264,7 @@
 				E19C4F4A1DA597EF0008DBF8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
