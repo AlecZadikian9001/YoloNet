@@ -96,23 +96,23 @@ int main(int argc, const char * argv[]) {
         begin_net_sequence(net);
         train_net(net, 4, ins, outs);
         finish_net_sequence(net);
-        error = net->error;
-        if (error < 0.25) {
+        error = net->best_error;
+        if (error < 0.30) {
             printf("\n");
             VERBOSE("%d iterations\n", i);
             break;
         }
         if (i % 1000 == 0) {
-            printf("\r%f", error);
+            printf("\rcurrent: %f, best: %f", net->error, error);
             fflush(stdout);
         }
     }
     
-    error = net->error;
+    error = net->best_error;
     VERBOSE("Net error: %f\n", error);
     
     for (int i = 0; i < 4; i++) {
-        outputs = activate_net(net, ins[i], 0);
+        outputs = activate_net(net, ins[i], 1);
         printf("(%f, %f): %f\n", ins[i][0], ins[i][1], outputs[0]);
         free(outputs);
     }

@@ -15,8 +15,8 @@
 #define NET_W_END (-NET_W_START)
 #define NET_B_START -2.0
 #define NET_B_END (-NET_B_START)
-#define NET_RAND_RATE 0.01
-#define NET_LEARN_RATE 0.5
+#define NET_RAND_RATE 0.0
+#define NET_LEARN_RATE 0.05
 #define NET_BACKPROP_RATE 0.8
 
 struct Neural_Node {
@@ -68,6 +68,20 @@ Neuron** save_net_neurons(Neural_Net* net) {
     }
     
     return ret;
+}
+
+void free_net_neurons(Neural_Net* net, Neuron** neurons) {
+    if (neurons == NULL) {
+        return;
+    }
+    int i = 0;
+    for (int level_i = 0; level_i < net->num_levels; level_i++) {
+        for (int node_i = 0; node_i < net->nodes_per_level[level_i]; node_i++) {
+            free_neuron(neurons[i]);
+            i += 1;
+        }
+    }
+    free(neurons);
 }
 
 void swap_net_neurons(Neural_Net* net, Neuron** neurons) {
@@ -175,11 +189,17 @@ Neural_Net* mk_deep_net(int num_inputs, int num_outputs, int num_layers, int* la
     ret->nodes_per_level = nodes_per_level;
     ret->num_levels = num_levels;
     ret->error = -1;
+    ret->best_error = -1;
+    ret->best_params = NULL;
     
     return ret;
 }
 
 scalar* activate_net(Neural_Net* net, scalar* input, int best) {
+    if (best) {
+        swap_net_neurons(net, net->best_params);
+    }
+    
     scalar* in_outs = NULL;
     for (int level_i = 0; level_i < net->num_levels; level_i++) {
         int nodes_per_level = net->nodes_per_level[level_i];
@@ -204,6 +224,11 @@ scalar* activate_net(Neural_Net* net, scalar* input, int best) {
         }
         in_outs = new_in_outs;
     }
+    
+    if (best) {
+        swap_net_neurons(net, net->best_params);
+    }
+    
     return in_outs;
 }
 
@@ -289,6 +314,10 @@ void train_net(Neural_Net* net, int num_trains, scalar** inputs, scalar** output
 }
 
 void finish_net_sequence(Neural_Net* net) {
-    // TODO
+    if (net->best_error < 0 || net->error < net->best_error) {
+        net->best_error = net->error;
+        free_net_neurons(net, net->best_params);
+        net->best_params = save_net_neurons(net);
+    }
 }
 
