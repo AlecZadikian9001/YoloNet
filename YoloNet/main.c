@@ -64,8 +64,8 @@ int main(int argc, const char * argv[]) {
 //    print_neuron(n);
 //    free_neuron(n);
     
-    int layers[] = {10, 10, 10};
-    int num_layers = 3;
+    int layers[] = {1, 1};
+    int num_layers = 2;
     int num_inputs = 2;
     int num_outputs = 1;
     Neural_Net* net = mk_deep_net(num_inputs, num_outputs, num_layers, layers);
@@ -91,26 +91,38 @@ int main(int argc, const char * argv[]) {
         free(outputs);
     }
     
-    scalar error;
+    scalar calc_error;
     for (int i = 0; 1; i++) {
         begin_net_sequence(net);
         train_net(net, 4, ins, outs);
         finish_net_sequence(net);
-        error = net->best_error;
-        if (error < 0.30) {
+        
+//        calc_error = get_net_error(net, 4, ins, outs, 0);
+//        if (net->error != calc_error) {
+//            printf("WTF. error = %f, calc_error = %f\n", net->error, calc_error);
+//            exit(9001);
+//        }
+        
+        if (net->error < 0.1) {
             printf("\n");
-            VERBOSE("%d iterations\n", i);
+            printf("%d iterations\n", i);
+            printf("current: %f, best: %f\n", net->error, net->best_error);
             break;
         }
         if (i % 1000 == 0) {
-            printf("\rcurrent: %f, best: %f", net->error, error);
+            printf("\rcurrent: %f, best: %f", net->error, net->best_error);
             fflush(stdout);
         }
     }
     
-    error = net->best_error;
-    VERBOSE("Net error: %f\n", error);
+    printf("\ncurrent:\n");
+    for (int i = 0; i < 4; i++) {
+        outputs = activate_net(net, ins[i], 0);
+        printf("(%f, %f): %f\n", ins[i][0], ins[i][1], outputs[0]);
+        free(outputs);
+    }
     
+    printf("\nbest:\n");
     for (int i = 0; i < 4; i++) {
         outputs = activate_net(net, ins[i], 1);
         printf("(%f, %f): %f\n", ins[i][0], ins[i][1], outputs[0]);

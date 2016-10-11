@@ -33,5 +33,6 @@ void begin_net_sequence(Neural_Net* net);
 void train_net(Neural_Net* net, int num_trains, scalar** inputs, scalar** outputs);
 void finish_net_sequence(Neural_Net* net);
 scalar net_best_error(Neural_Net* net);
+scalar get_net_error(Neural_Net* net, int num_trains, scalar** inputs, scalar** outputs, int best);
 
 #endif /* net_h */

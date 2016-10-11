@@ -100,7 +100,7 @@ void randomize_neuron(Neuron* n) {
     }
 }
 
-scalar activate_neuron(Neuron* n, scalar* input) {
+scalar get_neuron_sum(Neuron* n, scalar* input) {
     scalar* biases;
     scalar* weights;
     
@@ -111,6 +111,11 @@ scalar activate_neuron(Neuron* n, scalar* input) {
     for (int i = 0; i < n->dimension; i++) {
         sum += biases[i] + weights[i] * input[i];
     }
+    return sum;
+}
+
+scalar activate_neuron(Neuron* n, scalar* input) {
+    scalar sum = get_neuron_sum(n, input);
     scalar output = n->func(sum);
     n->last_output = output;
     return output;
@@ -138,8 +143,9 @@ void train_neuron(Neuron* n, scalar* input, scalar output) {
     for (int i = 0; i < n->dimension; i++) {
         // delta = 2 * error * n->dfunc(input[i]) * input[i]; // ∂E^2/dW_i
         // (new W_i) = (old W_i) - (learning rate) * ∂E^2/dW_i
-        scalar new_weight = n->weights[i] - (n->learning_rate * 2 * error * n->dfunc(input[i]) * input[i]);
-        scalar new_backprop = input[i] - (n->backprop_rate * 2 * error * n->dfunc(input[i]) * input[i]); // just ∂E^2/∂I_i
+        scalar sum = get_neuron_sum(n, input);
+        scalar new_weight = n->weights[i] - (n->learning_rate * 2 * error * n->dfunc(sum) * input[i]);
+        scalar new_backprop = input[i] - (n->backprop_rate * 2 * error * n->dfunc(sum)); // just ∂E^2/∂I_i
         if (new_weight != new_weight || new_backprop != new_backprop) {
             perror("new weight or backprop = NAN");
             exit(2);

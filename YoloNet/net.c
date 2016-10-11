@@ -13,11 +13,14 @@
 
 #define NET_W_START (-2.0)
 #define NET_W_END (-NET_W_START)
-#define NET_B_START -2.0
+#define NET_B_START -1.0
 #define NET_B_END (-NET_B_START)
-#define NET_RAND_RATE 0.0
-#define NET_LEARN_RATE 0.05
-#define NET_BACKPROP_RATE 0.8
+#define NET_RAND_RATE 0.001
+#define NET_LEARN_RATE 0.25
+#define NET_BACKPROP_RATE 0.5
+
+#define TRAIN(f_, ...) //printf("[TRAINING] "); printf((f_), __VA_ARGS__)
+#define TRAIN_(f_, ...) //printf((f_), __VA_ARGS__)
 
 struct Neural_Node {
     Neuron* neuron; // NULL if net input
@@ -88,8 +91,9 @@ void swap_net_neurons(Neural_Net* net, Neuron** neurons) {
     int i = 0;
     for (int level_i = 0; level_i < net->num_levels; level_i++) {
         for (int node_i = 0; node_i < net->nodes_per_level[level_i]; node_i++) {
+            Neuron* tmp = neurons[i];
             neurons[i] = (net->levels[level_i][node_i]->neuron);
-            net->levels[level_i][node_i]->neuron = neurons[i];
+            net->levels[level_i][node_i]->neuron = tmp;
             i += 1;
         }
     }
@@ -163,10 +167,12 @@ Neural_Net* mk_deep_net(int num_inputs, int num_outputs, int num_layers, int* la
     /* output layer */
     Neural_Node** outputs = emalloc(sizeof(Neural_Node*) * num_outputs);
     for (int i = 0; i < num_outputs; i++) {
-        Neuron* n = mk_neuron(1, &neuron_func_id, &neuron_dfunc_id);
+        Neuron* n = mk_neuron(last_num_nodes, &neuron_func_id, &neuron_dfunc_id);
         
-        n->weights[0] = 1.0;
-        n->biases[0] = 0.0;
+        for (int j = 0; j < last_num_nodes; j++) {
+            n->weights[j] = 1.0;
+            n->biases[j] = 0.0;
+        }
         n->rand_rate = 0;
         n->learning_rate = 0;
         n->backprop_rate = NET_BACKPROP_RATE;
@@ -250,6 +256,20 @@ void train_net_helper(Neural_Net* net, scalar* input, scalar* outputs) {
             ins = input;
         }
         
+        TRAIN("\n", 0);
+        TRAIN("Examining level %d, %d nodes, inputs:", level_i, nodes_per_level);
+        int nppl;
+        if (level_i > 0) {
+            nppl = net->nodes_per_level[level_i - 1];
+        } else {
+            nppl = net->num_inputs;
+        }
+        for (int i = 0; i < nppl; i++) {
+            TRAIN_(" %f", ins[i]);
+        }
+        TRAIN_("\n", 0);
+        
+    
         for (int i = 0; i < nodes_per_level; i++) {
             Neural_Node* nn = net->levels[level_i][i];
             
@@ -267,10 +287,28 @@ void train_net_helper(Neural_Net* net, scalar* input, scalar* outputs) {
                 parent_output[0] = outputs[i];
             }
             
+            TRAIN("Node %d pre-adjustment (weight, bias, backprop)s:", i);
+            for (int j = 0; j < nn->neuron->dimension; j++) {
+                TRAIN_(" (%f, %f, %f)", nn->neuron->weights[j], nn->neuron->biases[j], nn->neuron->backprop[j]);
+            }
+            TRAIN_("\n", 0);
+            
+            TRAIN("Node %d runtime vs expected outputs: ", i);
             for (int parent = 0; parent < num_parents; parent++) {
+                
+                TRAIN_(" (%f vs %f)", activate_neuron(nn->neuron, ins), parent_output[parent]);
+                
                 train_neuron(nn->neuron, ins, parent_output[parent]);
             }
             free(parent_output);
+         
+            TRAIN_("\n", 0);
+            
+            TRAIN("Node %d pst-adjustment (weight, bias, backprop)s:", i);
+            for (int j = 0; j < nn->neuron->dimension; j++) {
+                TRAIN_(" (%f, %f, %f)", nn->neuron->weights[j], nn->neuron->biases[j], nn->neuron->backprop[j]);
+            }
+            TRAIN_("\n", 0);
         }
         
         if (ins != input) {
@@ -293,11 +331,12 @@ void begin_net_sequence(Neural_Net* net) {
     // TODO
 }
 
-void train_net(Neural_Net* net, int num_trains, scalar** inputs, scalar** outputs) {
+scalar get_net_error(Neural_Net* net, int num_trains,
+                     scalar** inputs, scalar** outputs, int best) {
     scalar worst_error = -1;
     scalar* outs;
     for (int train_i = 0; train_i < num_trains; train_i++) {
-        outs = activate_net(net, inputs[train_i], 0);
+        outs = activate_net(net, inputs[train_i], best);
         for (int oi = 0; oi < net->num_outputs; oi++) {
             scalar error = outputs[train_i][oi] - outs[oi];
             scalar error_sq = error * error;
@@ -306,6 +345,14 @@ void train_net(Neural_Net* net, int num_trains, scalar** inputs, scalar** output
             }
         }
         free(outs);
+    }
+    return worst_error;
+}
+
+void train_net(Neural_Net* net, int num_trains, scalar** inputs, scalar** outputs) {
+    scalar worst_error = -1;
+    for (int train_i = 0; train_i < num_trains; train_i++) {
+        worst_error = get_net_error(net, num_trains, inputs, outputs, 0);
         train_net_helper(net, inputs[train_i], outputs[train_i]);
     }
     if (worst_error > net->error) {
