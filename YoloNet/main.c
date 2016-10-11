@@ -91,10 +91,11 @@ int main(int argc, const char * argv[]) {
         free(outputs);
     }
     
-    scalar calc_error;
+    scalar errors[4];
+    scalar error = 0;
     for (int i = 0; 1; i++) {
         begin_net_sequence(net);
-        train_net(net, 4, ins, outs);
+        train_net(net, 1, ins + i%4, outs + i%4);
         finish_net_sequence(net);
         
 //        calc_error = get_net_error(net, 4, ins, outs, 0);
@@ -102,15 +103,23 @@ int main(int argc, const char * argv[]) {
 //            printf("WTF. error = %f, calc_error = %f\n", net->error, calc_error);
 //            exit(9001);
 //        }
+        errors[i%4] = net->error;
         
-        if (net->error < 0.1) {
-            printf("\n");
-            printf("%d iterations\n", i);
-            printf("current: %f, best: %f\n", net->error, net->best_error);
-            break;
+        if (i % 4 == 3) {
+            error = 0;
+            for (int j = 0; j < 4; j++) {
+                error += errors[j];
+            }
+            error = error / 4;
+            if (error < 0.01 || i > 100000) {
+                printf("\n");
+                printf("%d iterations\n", i);
+                printf("error: %f\n", error);
+                break;
+            }
         }
-        if (i % 1000 == 0) {
-            printf("\rcurrent: %f, best: %f", net->error, net->best_error);
+        if (i % 100000 == 0) {
+            printf("\rerror: %f", error);
             fflush(stdout);
         }
     }
