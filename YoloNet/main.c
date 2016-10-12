@@ -74,18 +74,22 @@ int main(int argc, const char * argv[]) {
     scalar in2[] = {1.0, 0.0};
     scalar in3[] = {1.0, 1.0};
     scalar in4[] = {0.0, 0.0};
+    scalar in5[] = {0.5, 1.0};
     
     scalar out1[] = {1.0};
     scalar out2[] = {1.0};
     scalar out3[] = {0.0};
     scalar out4[] = {0.0};
+    scalar out5[] = {-2.0};
     
-    scalar* ins[] = {in1, in2, in3, in4};
-    scalar* outs[] = {out1, out2, out3, out4};
+    scalar* ins[] = {in1, in2, in3, in4, in5};
+    scalar* outs[] = {out1, out2, out3, out4, out5};
+    
+    int num_trains = 5;
     
     scalar* outputs;
     
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < num_trains; i++) {
         outputs = activate_net(net, ins[i], 0);
         printf("(%f, %f): %f\n", ins[i][0], ins[i][1], outputs[0]);
         free(outputs);
@@ -94,7 +98,7 @@ int main(int argc, const char * argv[]) {
     scalar calc_error;
     for (int i = 0; 1; i++) {
         begin_net_sequence(net);
-        train_net(net, 4, ins, outs);
+        train_net(net, num_trains, ins, outs);
         finish_net_sequence(net);
         
 //        calc_error = get_net_error(net, 4, ins, outs, 0);
@@ -116,14 +120,14 @@ int main(int argc, const char * argv[]) {
     }
     
     printf("\ncurrent:\n");
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < num_trains; i++) {
         outputs = activate_net(net, ins[i], 0);
         printf("(%f, %f): %f\n", ins[i][0], ins[i][1], outputs[0]);
         free(outputs);
     }
     
     printf("\nbest:\n");
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < num_trains; i++) {
         outputs = activate_net(net, ins[i], 1);
         printf("(%f, %f): %f\n", ins[i][0], ins[i][1], outputs[0]);
         free(outputs);
