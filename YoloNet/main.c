@@ -64,8 +64,8 @@ int main(int argc, const char * argv[]) {
 //    print_neuron(n);
 //    free_neuron(n);
     
-    int layers[] = {1, 1};
-    int num_layers = 2;
+    int layers[] = {5, 5, 5};
+    int num_layers = 3;
     int num_inputs = 2;
     int num_outputs = 1;
     Neural_Net* net = mk_deep_net(num_inputs, num_outputs, num_layers, layers);
@@ -77,7 +77,7 @@ int main(int argc, const char * argv[]) {
     
     scalar out1[] = {1.0};
     scalar out2[] = {1.0};
-    scalar out3[] = {2.0};
+    scalar out3[] = {0.0};
     scalar out4[] = {0.0};
     
     scalar* ins[] = {in1, in2, in3, in4};
@@ -91,11 +91,10 @@ int main(int argc, const char * argv[]) {
         free(outputs);
     }
     
-    scalar errors[4];
-    scalar error = 0;
+    scalar calc_error;
     for (int i = 0; 1; i++) {
         begin_net_sequence(net);
-        train_net(net, 1, ins + i%4, outs + i%4);
+        train_net(net, 4, ins, outs);
         finish_net_sequence(net);
         
 //        calc_error = get_net_error(net, 4, ins, outs, 0);
@@ -103,23 +102,15 @@ int main(int argc, const char * argv[]) {
 //            printf("WTF. error = %f, calc_error = %f\n", net->error, calc_error);
 //            exit(9001);
 //        }
-        errors[i%4] = net->error;
         
-        if (i % 4 == 3) {
-            error = 0;
-            for (int j = 0; j < 4; j++) {
-                error += errors[j];
-            }
-            error = error / 4;
-            if (error < 0.01 || i > 100000) {
-                printf("\n");
-                printf("%d iterations\n", i);
-                printf("error: %f\n", error);
-                break;
-            }
+        if (net->error < 0.05) {
+            printf("\n");
+            printf("%d iterations\n", i);
+            printf("current: %f, best: %f\n", net->error, net->best_error);
+            break;
         }
-        if (i % 100000 == 0) {
-            printf("\rerror: %f", error);
+        if (i % 1000 == 0) {
+            printf("\rcurrent: %f, best: %f", net->error, net->best_error);
             fflush(stdout);
         }
     }

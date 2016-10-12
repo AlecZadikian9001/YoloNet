@@ -175,8 +175,8 @@ Neural_Net* mk_deep_net(int num_inputs, int num_outputs, int num_layers, int* la
             n->weights[j] = 1.0;
             n->biases[j] = 0.0;
         }
-        n->rand_rate = 0;
-        n->learning_rate = 0;
+//        n->rand_rate = 0;
+//        n->learning_rate = 0;
         n->backprop_rate = NET_BACKPROP_RATE;
         
         Neural_Node* nn = mk_neural_node(n, i, last_num_nodes, last_nodes, 0, NULL);
@@ -354,6 +354,8 @@ void train_net(Neural_Net* net, int num_trains, scalar** inputs, scalar** output
     scalar worst_error = -1;
     for (int train_i = 0; train_i < num_trains; train_i++) {
         worst_error = get_net_error(net, num_trains, inputs, outputs, 0);
+        scalar* out = activate_net(net, inputs[train_i], 0);
+        free(out);
         train_net_helper(net, inputs[train_i], outputs[train_i]);
     }
     if (worst_error > net->error) {
