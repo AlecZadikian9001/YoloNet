@@ -85,7 +85,7 @@ int main(int argc, const char * argv[]) {
         free(outputs);
     }
     
-    scalar calc_error;
+    scalar last_error = -1;
     for (int i = 0; 1; i++) {
         begin_net_sequence(net);
         train_net(net, num_trains, ins, outs);
@@ -97,16 +97,20 @@ int main(int argc, const char * argv[]) {
 //            exit(9001);
 //        }
         
-        if (net->error < 0.05) {
+        if (net->error < 0.005) {
             printf("\n");
             printf("%d iterations\n", i);
             printf("current: %f, best: %f\n", net->error, net->best_error);
             break;
         }
-        if (i % 1000 == 0) {
+        if (last_error != net->best_error) {
+            printf("\nnew best!\n");
+        }
+        if (last_error != net->best_error || i % 1000 == 0) {
             printf("\rcurrent: %f, best: %f", net->error, net->best_error);
             fflush(stdout);
         }
+        last_error = net->best_error;
     }
     
     printf("\ntraining data has error %f:\n", net->error);
