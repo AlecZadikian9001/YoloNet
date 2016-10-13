@@ -28,67 +28,57 @@
 #include "neuron.h"
 #include "net.h"
 
+scalar f(scalar i1, scalar i2, scalar i3) {
+    return sin(i1) + i2 * i3;
+}
+
 int main(int argc, const char * argv[]) {
     
     srand((int) time(NULL));
     
-//    Neuron* n = mk_neuron(2, &neuron_func_tanh, &neuron_dfunc_tanh);
-//    //n->b_rand_start = 0;
-//    //n->b_rand_end = 0;
-//    randomize_neuron(n);
-//    
-//    scalar in1[] = {2.0, 3.0};
-//    scalar in2[] = {9.0, 9.0};
-//    scalar** in_sequence = emalloc(2 * sizeof(scalar*));
-//    in_sequence[0] = in1;
-//    in_sequence[1] = in2;
-//    
-//    scalar out_sequence[] = {-0.3, 0.6};
-    
-
-//    scalar result;
-//    
-//    for (int i = 0; i < 100; i++) {
-//        begin_neuron_sequence(n);
-//        for (int j = 0; j < 100; j++) {
-//            train_neuron(n, in_sequence[j % 2], out_sequence[j % 2]);
-//        }
-//        finish_neuron_sequence(n);
-//        
-//        for (int j = 0; j < 2; j++) {
-//            result = activate_neuron(n, in_sequence[j], 1);
-//            printf("(%f, %f): %f vs %f, error %f\n", in_sequence[j][0], in_sequence[j][1], result, out_sequence[j], n->best_sq_error);
-//        }
-//    }
-//    
-//    print_neuron(n);
-//    free_neuron(n);
-    
-    int layers[] = {5, 5, 5};
     int num_layers = 3;
-    int num_inputs = 2;
+    int layers[] = {3, 10, 3};
+    int num_inputs = 3;
     int num_outputs = 1;
     Neural_Net* net = mk_deep_net(num_inputs, num_outputs, num_layers, layers);
     
-    scalar in1[] = {0.0, 1.0};
-    scalar in2[] = {1.0, 0.0};
-    scalar in3[] = {1.0, 1.0};
-    scalar in4[] = {0.0, 0.0};
-    scalar in5[] = {0.5, 1.0};
+    int num_trains = 30;
+    scalar* ins[num_trains];
+    scalar* outs[num_trains];
     
-    scalar out1[] = {1.0};
-    scalar out2[] = {1.0};
-    scalar out3[] = {0.0};
-    scalar out4[] = {0.0};
-    scalar out5[] = {-2.0};
+    for (int i = 0; i < num_trains; i++) {
+        scalar* in = emalloc(sizeof(scalar) * num_inputs);
+        scalar* out = emalloc(sizeof(scalar) * num_outputs);
+        
+        for (int in_i = 0; in_i < num_inputs; in_i++) {
+            in[in_i] = ((scalar) (rand() % 10000)) / 10000;
+        }
+        
+        out[0] = f(in[0], in[1], in[2]);
+        
+        ins[i] = in;
+        outs[i] = out;
+    }
     
-    scalar* ins[] = {in1, in2, in3, in4, in5};
-    scalar* outs[] = {out1, out2, out3, out4, out5};
+    int num_holds = 5;
+    scalar* hins[num_trains];
+    scalar* houts[num_trains];
     
-    int num_trains = 5;
+    for (int i = 0; i < num_holds; i++) {
+        scalar* in = emalloc(sizeof(scalar) * num_inputs);
+        scalar* out = emalloc(sizeof(scalar) * num_outputs);
+        
+        for (int in_i = 0; in_i < num_inputs; in_i++) {
+            in[in_i] = ((scalar) (rand() % 10000)) / 10000;
+        }
+        
+        out[0] = f(in[0], in[1], in[2]);
+        
+        hins[i] = in;
+        houts[i] = out;
+    }
     
     scalar* outputs;
-    
     for (int i = 0; i < num_trains; i++) {
         outputs = activate_net(net, ins[i], 0);
         printf("(%f, %f): %f\n", ins[i][0], ins[i][1], outputs[0]);
@@ -119,17 +109,19 @@ int main(int argc, const char * argv[]) {
         }
     }
     
-    printf("\ncurrent:\n");
+    printf("\ntraining data has error %f:\n", net->error);
     for (int i = 0; i < num_trains; i++) {
         outputs = activate_net(net, ins[i], 0);
-        printf("(%f, %f): %f\n", ins[i][0], ins[i][1], outputs[0]);
+        printf("(%f, %f): %f vs %f\n", ins[i][0], ins[i][1], outputs[0], outs[i][0]);
         free(outputs);
     }
     
-    printf("\nbest:\n");
-    for (int i = 0; i < num_trains; i++) {
-        outputs = activate_net(net, ins[i], 1);
-        printf("(%f, %f): %f\n", ins[i][0], ins[i][1], outputs[0]);
+    scalar holdout_error = get_net_error(net, num_holds, hins, houts, 0);
+    
+    printf("\nholdout data has error %f:\n", holdout_error);
+    for (int i = 0; i < num_holds; i++) {
+        outputs = activate_net(net, hins[i], 0);
+        printf("(%f, %f): %f vs %f\n", hins[i][0], hins[i][1], outputs[0], houts[i][0]);
         free(outputs);
     }
     
