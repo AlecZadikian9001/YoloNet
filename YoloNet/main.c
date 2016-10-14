@@ -86,6 +86,7 @@ int main(int argc, const char * argv[]) {
     }
     
     scalar last_error = -1;
+    scalar holdout_best = INFINITY;
     for (int i = 0; 1; i++) {
         begin_net_sequence(net);
         train_net(net, num_trains, ins, outs);
@@ -98,16 +99,22 @@ int main(int argc, const char * argv[]) {
 //        }
         
         if (net->error < 0.05) {
-            printf("\n");
-            printf("%d iterations\n", i);
-            printf("current: %f, best: %f\n", net->error, net->best_error);
-            break;
+            scalar holdout_error = get_net_error(net, num_holds, hins, houts, 0);
+            if (holdout_error < holdout_best) {
+                holdout_best = holdout_error;
+            }
+            if (holdout_error < 0.05) {
+                printf("\n");
+                printf("%d iterations\n", i);
+                printf("current: %f, best: %f\n", net->error, net->best_error);
+                break;
+            }
         }
         if (last_error != net->best_error) {
             printf("\nnew best!\n");
         }
         if (last_error != net->best_error || i % 1000 == 0) {
-            printf("\rcurrent: %f, best: %f", net->error, net->best_error);
+            printf("\rcurrent: %f, best: %f, holdout best: %f", net->error, net->best_error, holdout_best);
             fflush(stdout);
         }
         last_error = net->best_error;
