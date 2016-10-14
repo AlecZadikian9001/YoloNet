@@ -15,7 +15,7 @@
 #define NET_W_END (-NET_W_START)
 #define NET_B_START -1.0
 #define NET_B_END (-NET_B_START)
-#define NET_RAND_RATE  (0.001)
+#define NET_RAND_RATE  (0.0000001)
 #define NET_LEARN_RATE (0.0025)
 #define NET_BACKPROP_RATE (0.5)
 

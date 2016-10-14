@@ -159,6 +159,7 @@ void train_neuron(Neuron* n, scalar* input, scalar output) {
     for (int i = 0; i < n->dimension; i++) {
         scalar sum = get_neuron_sum(n, input);
         
+        // get rates
         scalar learning_rate;
         if (!n->learning_rate_ptr) {
             learning_rate = n->learning_rate;
@@ -179,6 +180,12 @@ void train_neuron(Neuron* n, scalar* input, scalar output) {
         scalar new_backprop = input[i] - backprop_rate * ( (2 * error * n->dfunc(sum)) * n->weights[i] ); // ∂E^2/∂O_i
         scalar new_bias = n->biases[i] - learning_rate * ( (2 * error * n->dfunc(sum)) * 1 ); // ∂E^2/∂B = ∂E^2/∂I * ∂I/∂B
         
+        // TODO temp overrides
+        new_backprop = input[i] - backprop_rate * ( (2 * error * n->dfunc(sum)) );
+        //new_bias = n->biases[i] - learning_rate * ( (2 * error) * 1 );
+        //new_bias = n->biases[i];
+        
+        // sanity checks
         if (new_bias > 9000 || new_bias < -9000) {
             perror("new_bias is too extreme\n");
             exit(2);
@@ -188,6 +195,7 @@ void train_neuron(Neuron* n, scalar* input, scalar output) {
             exit(2);
         }
         
+        // apply changes
         n->weights[i] = new_weight;
         n->backprop[i] = new_backprop;
         n->biases[i] = new_bias;

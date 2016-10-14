@@ -29,6 +29,7 @@
 #include "net.h"
 
 scalar f(scalar i1, scalar i2, scalar i3) {
+    //return i1 + i2 + i3;
     return sin(i1) + i2 * i3;
     //return sin(i1);
 }
@@ -38,7 +39,10 @@ int main(int argc, const char * argv[]) {
     srand((int) time(NULL));
     
     int num_layers = 3;
-    int layers[] = {3, 10, 3};
+    int layers[num_layers];
+    for (int i = 0; i < num_layers; i++) {
+        layers[i] = 8;
+    }
     int num_inputs = 3;
     int num_outputs = 1;
     Neural_Net* net = mk_deep_net(num_inputs, num_outputs, num_layers, layers);
@@ -96,7 +100,7 @@ int main(int argc, const char * argv[]) {
         
         net->learning_rate = 0.000025;//0.025 * pow(net->error, 2);
         
-        scalar error_threshold = 0.05;
+        scalar error_threshold = 0.1;
         
         if (net->error < error_threshold) {
             holdout_error = get_net_error(net, num_holds, hins, houts, 0);
