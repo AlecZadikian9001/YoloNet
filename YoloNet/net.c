@@ -15,9 +15,9 @@
 #define NET_W_END (-NET_W_START)
 #define NET_B_START -1.0
 #define NET_B_END (-NET_B_START)
-#define NET_RAND_RATE  (0.0000001)
+#define NET_RAND_RATE  (0.0000000001)
 #define NET_LEARN_RATE (0.0025)
-#define NET_BACKPROP_RATE (0.5)
+#define NET_BACKPROP_RATE (1.0)
 
 #define TRAIN(f_, ...) if(train_log) { printf("[TRAINING] "); printf((f_), __VA_ARGS__); }
 #define TRAIN_(f_, ...) if(train_log) { printf((f_), __VA_ARGS__); }
@@ -366,8 +366,8 @@ void train_net(Neural_Net* net, int num_trains, scalar** inputs, scalar** output
     scalar worst_error = -1;
     for (int train_i = 0; train_i < num_trains; train_i++) {
         worst_error = get_net_error(net, num_trains, inputs, outputs, 0);
-        scalar* out = activate_net(net, inputs[train_i], 0);
-        free(out);
+        //scalar* out = activate_net(net, inputs[train_i], 0);
+        //free(out);
         train_net_helper(net, inputs[train_i], outputs[train_i]);
     }
     if (worst_error > net->error) {

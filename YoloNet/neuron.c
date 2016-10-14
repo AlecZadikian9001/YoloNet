@@ -148,10 +148,10 @@ void train_neuron(Neuron* n, scalar* input, scalar output) {
     
     /* weight update */
     // http://www.philbrierley.com/main.html?code/bpproof.html&code/codeleft.html :
-    // ∂E^2/∂I = 2E * f'(I)
-    // ∂E^2/dW_i = ∂E^2/∂I_i * ∂I/∂W_i
+    // ∂E/∂I = E * f'(I)
+    // ∂E/dW_i = ∂E^2/∂I_i * ∂I/∂W_i
     // ∂I/∂W_i = O_i
-    // ∂E^2/∂O_i = ∂E^2/∂I * ∂I/∂O_i
+    // ∂E/∂O_i = ∂E/∂I * ∂I/∂O_i
     // ∂I/∂O_i = W_i
     // ∂I/∂B_i = 1
     scalar test = activate_neuron(n, input);
@@ -176,12 +176,12 @@ void train_neuron(Neuron* n, scalar* input, scalar output) {
         backprop_rate = min(backprop_rate, 1.0);
         
         // TODO Something fishy is going on here.
-        scalar new_weight = n->weights[i] - learning_rate * ( (2 * error * n->dfunc(sum) * input[i]) ); // ∂E^2/∂W_i
-        scalar new_backprop = input[i] - backprop_rate * ( (2 * error * n->dfunc(sum)) * n->weights[i] ); // ∂E^2/∂O_i
-        scalar new_bias = n->biases[i] - learning_rate * ( (2 * error * n->dfunc(sum)) * 1 ); // ∂E^2/∂B = ∂E^2/∂I * ∂I/∂B
+        scalar new_weight = n->weights[i] - learning_rate * ( (error * n->dfunc(sum) * input[i]) ); // ∂E/∂W_i
+        scalar new_backprop = input[i] - backprop_rate * ( (error * n->dfunc(sum)) * n->weights[i] ); // ∂E/∂O_i
+        scalar new_bias = n->biases[i] - learning_rate * ( (error * n->dfunc(sum)) * 1 ); // ∂E/∂B = ∂E/∂I * ∂I/∂B
         
         // TODO temp overrides
-        new_backprop = input[i] - backprop_rate * ( (2 * error * n->dfunc(sum)) );
+        //new_backprop = input[i] - backprop_rate * ( (2 * error * n->dfunc(sum)) );
         //new_bias = n->biases[i] - learning_rate * ( (2 * error) * 1 );
         //new_bias = n->biases[i];
         

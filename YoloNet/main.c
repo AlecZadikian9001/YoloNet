@@ -31,14 +31,20 @@
 scalar f(scalar i1, scalar i2, scalar i3) {
     //return i1 + i2 + i3;
     return sin(i1) + i2 * i3;
-    //return sin(i1);
+    //return tanh(i1);
+    
+//    if (i2 < i3) {
+//        return i1;
+//    } else {
+//        return 2 * i2 - i3;
+//    }
 }
 
 int main(int argc, const char * argv[]) {
     
     srand((int) time(NULL));
     
-    int num_layers = 3;
+    int num_layers = 5;
     int layers[num_layers];
     for (int i = 0; i < num_layers; i++) {
         layers[i] = 8;
@@ -98,15 +104,16 @@ int main(int argc, const char * argv[]) {
         train_net(net, num_trains, ins, outs);
         finish_net_sequence(net);
         
-        net->learning_rate = 0.000025;//0.025 * pow(net->error, 2);
+        net->learning_rate = 0.0025 * pow(fabs(net->error), 4);
         
         scalar error_threshold = 0.1;
         
+        holdout_error = get_net_error(net, num_holds, hins, houts, 0);
+        if (holdout_error < holdout_best) {
+            holdout_best = holdout_error;
+        }
+        
         if (net->error < error_threshold) {
-            holdout_error = get_net_error(net, num_holds, hins, houts, 0);
-            if (holdout_error < holdout_best) {
-                holdout_best = holdout_error;
-            }
             if (holdout_error < error_threshold) {
                 printf("\n");
                 printf("%d iterations\n", i);
