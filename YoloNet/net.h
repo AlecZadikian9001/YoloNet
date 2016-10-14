@@ -36,5 +36,6 @@ void train_net(Neural_Net* net, int num_trains, scalar** inputs, scalar** output
 void finish_net_sequence(Neural_Net* net);
 scalar net_best_error(Neural_Net* net);
 scalar get_net_error(Neural_Net* net, int num_trains, scalar** inputs, scalar** outputs, int best);
+void randomize_net(Neural_Net* net);
 
 #endif /* net_h */

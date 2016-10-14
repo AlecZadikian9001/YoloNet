@@ -172,13 +172,13 @@ void train_neuron(Neuron* n, scalar* input, scalar output) {
         } else {
             backprop_rate = *(n->backprop_rate_ptr);
         }
-        learning_rate = min(learning_rate, 1.0);
-        backprop_rate = min(backprop_rate, 1.0);
+        learning_rate = min(learning_rate, 0.1);
+        backprop_rate = min(backprop_rate, 0.1);
         
         // TODO Something fishy is going on here.
         scalar new_weight = n->weights[i] - learning_rate * ( (error * n->dfunc(sum) * input[i]) ); // ∂E/∂W_i
         scalar new_backprop = input[i] - backprop_rate * ( (error * n->dfunc(sum)) * n->weights[i] ); // ∂E/∂O_i
-        scalar new_bias = n->biases[i] - learning_rate * ( (error * n->dfunc(sum)) * 1 ); // ∂E/∂B = ∂E/∂I * ∂I/∂B
+        scalar new_bias = n->biases[i] - pow(learning_rate, 4) * ( (error * n->dfunc(sum)) * 1 ); // ∂E/∂B = ∂E/∂I * ∂I/∂B
         
         // TODO temp overrides
         //new_backprop = input[i] - backprop_rate * ( (2 * error * n->dfunc(sum)) );

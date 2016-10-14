@@ -15,7 +15,7 @@
 #define NET_W_END (-NET_W_START)
 #define NET_B_START -1.0
 #define NET_B_END (-NET_B_START)
-#define NET_RAND_RATE  (0.0000000001)
+#define NET_RAND_RATE  (0.000000000001)
 #define NET_LEARN_RATE (0.0025)
 #define NET_BACKPROP_RATE (1.0)
 
@@ -360,6 +360,10 @@ scalar get_net_error(Neural_Net* net, int num_trains,
         free(outs);
     }
     return worst_error;
+}
+
+void randomize_net(Neural_Net* net) {
+    net_func(net, &randomize_neuron);
 }
 
 void train_net(Neural_Net* net, int num_trains, scalar** inputs, scalar** outputs) {

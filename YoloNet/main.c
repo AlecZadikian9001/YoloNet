@@ -28,9 +28,9 @@
 #include "neuron.h"
 #include "net.h"
 
-scalar f(scalar i1, scalar i2, scalar i3) {
-    //return i1 + i2 + i3;
-    return sin(i1) + i2 * i3;
+scalar f(scalar i1, scalar i2) {
+    //return i1 + i2;
+    return sin(i1) + i2;
     //return tanh(i1);
     
 //    if (i2 < i3) {
@@ -44,16 +44,16 @@ int main(int argc, const char * argv[]) {
     
     srand((int) time(NULL));
     
-    int num_layers = 5;
+    int num_layers = 1;
     int layers[num_layers];
     for (int i = 0; i < num_layers; i++) {
-        layers[i] = 8;
+        layers[i] = 2;
     }
-    int num_inputs = 3;
+    int num_inputs = 2;
     int num_outputs = 1;
     Neural_Net* net = mk_deep_net(num_inputs, num_outputs, num_layers, layers);
     
-    int num_trains = 30;
+    int num_trains = 10;
     scalar* ins[num_trains];
     scalar* outs[num_trains];
     
@@ -65,7 +65,7 @@ int main(int argc, const char * argv[]) {
             in[in_i] = ((scalar) (rand() % 10000)) / 10000;
         }
         
-        out[0] = f(in[0], in[1], in[2]);
+        out[0] = f(in[0], in[1]);
         
         ins[i] = in;
         outs[i] = out;
@@ -83,7 +83,7 @@ int main(int argc, const char * argv[]) {
             in[in_i] = ((scalar) (rand() % 10000)) / 10000;
         }
         
-        out[0] = f(in[0], in[1], in[2]);
+        out[0] = f(in[0], in[1]);
         
         hins[i] = in;
         houts[i] = out;
@@ -99,12 +99,14 @@ int main(int argc, const char * argv[]) {
     scalar last_error = INFINITY;
     scalar holdout_best = INFINITY;
     scalar holdout_error = INFINITY;
+    scalar last_best_error = INFINITY;
+    int repeats = 0;
     for (int i = 0; 1; i++) {
         begin_net_sequence(net);
         train_net(net, num_trains, ins, outs);
         finish_net_sequence(net);
         
-        net->learning_rate = 0.0025 * pow(fabs(net->error), 4);
+        net->learning_rate = 0.01 * pow(fabs(net->error), 1);
         
         scalar error_threshold = 0.1;
         
@@ -125,9 +127,18 @@ int main(int argc, const char * argv[]) {
 //            printf("\nnew best!\n");
 //        }
         if (/*last_error != net->best_error ||*/ i % 100 == 0) {
+            if (net->best_error == last_best_error) {
+                repeats += 1;
+                if (repeats > 10) {
+                    printf("\nrandomizing!\n");
+                    randomize_net(net);
+                    repeats = 0;
+                }
+            }
             printf("\rlearn: %.10e, current: %f, best: %f, holdout: %f, holdout best: %f",
                    net->learning_rate, net->error, net->best_error, holdout_error, holdout_best);
             fflush(stdout);
+            last_best_error = net->best_error;
         }
         last_error = net->best_error;
     }
