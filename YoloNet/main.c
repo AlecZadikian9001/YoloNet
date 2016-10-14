@@ -29,16 +29,16 @@
 #include "net.h"
 
 scalar f(scalar i1, scalar i2, scalar i3) {
-   // return sin(i1) + i2 * i3;
-    return sin(i1);
+    return sin(i1) + i2 * i3;
+    //return sin(i1);
 }
 
 int main(int argc, const char * argv[]) {
     
     srand((int) time(NULL));
     
-    int num_layers = 5;
-    int layers[] = {2, 2, 10, 10, 10};
+    int num_layers = 3;
+    int layers[] = {3, 10, 3};
     int num_inputs = 3;
     int num_outputs = 1;
     Neural_Net* net = mk_deep_net(num_inputs, num_outputs, num_layers, layers);
@@ -86,19 +86,20 @@ int main(int argc, const char * argv[]) {
         free(outputs);
     }
     
-    scalar last_error = -1;
+    scalar last_error = INFINITY;
     scalar holdout_best = INFINITY;
+    scalar holdout_error = INFINITY;
     for (int i = 0; 1; i++) {
         begin_net_sequence(net);
         train_net(net, num_trains, ins, outs);
         finish_net_sequence(net);
         
-        net->learning_rate = 0.00000025 * net->error;
+        net->learning_rate = 0.000025;//0.025 * pow(net->error, 2);
         
-        scalar error_threshold = 0.02;
+        scalar error_threshold = 0.05;
         
         if (net->error < error_threshold) {
-            scalar holdout_error = get_net_error(net, num_holds, hins, houts, 0);
+            holdout_error = get_net_error(net, num_holds, hins, houts, 0);
             if (holdout_error < holdout_best) {
                 holdout_best = holdout_error;
             }
@@ -113,8 +114,8 @@ int main(int argc, const char * argv[]) {
 //            printf("\nnew best!\n");
 //        }
         if (/*last_error != net->best_error ||*/ i % 100 == 0) {
-            printf("\rlearn: %.10e, current: %f, best: %f, holdout best: %f",
-                   net->learning_rate, net->error, net->best_error, holdout_best);
+            printf("\rlearn: %.10e, current: %f, best: %f, holdout: %f, holdout best: %f",
+                   net->learning_rate, net->error, net->best_error, holdout_error, holdout_best);
             fflush(stdout);
         }
         last_error = net->best_error;
@@ -127,7 +128,7 @@ int main(int argc, const char * argv[]) {
         free(outputs);
     }
     
-    scalar holdout_error = get_net_error(net, num_holds, hins, houts, 0);
+    holdout_error = get_net_error(net, num_holds, hins, houts, 0);
     
     printf("\nholdout data has error %f:\n", holdout_error);
     for (int i = 0; i < num_holds; i++) {

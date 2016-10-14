@@ -171,9 +171,12 @@ void train_neuron(Neuron* n, scalar* input, scalar output) {
         } else {
             backprop_rate = *(n->backprop_rate_ptr);
         }
+        learning_rate = min(learning_rate, 1.0);
+        backprop_rate = min(backprop_rate, 1.0);
         
+        // TODO Something fishy is going on here.
         scalar new_weight = n->weights[i] - learning_rate * ( (2 * error * n->dfunc(sum) * input[i]) ); // ∂E^2/∂W_i
-        scalar new_backprop = input[i] - backprop_rate * ( (2 * error * n->dfunc(sum)) * (n->weights[i]) ); // ∂E^2/∂O_i
+        scalar new_backprop = input[i] - backprop_rate * ( (2 * error * n->dfunc(sum)) * n->weights[i] ); // ∂E^2/∂O_i
         scalar new_bias = n->biases[i] - learning_rate * ( (2 * error * n->dfunc(sum)) * 1 ); // ∂E^2/∂B = ∂E^2/∂I * ∂I/∂B
         
         if (new_bias > 9000 || new_bias < -9000) {
