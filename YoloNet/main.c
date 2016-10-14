@@ -29,7 +29,8 @@
 #include "net.h"
 
 scalar f(scalar i1, scalar i2, scalar i3) {
-    return sin(i1) + i2 * i3;
+   // return sin(i1) + i2 * i3;
+    return sin(i1);
 }
 
 int main(int argc, const char * argv[]) {
@@ -60,7 +61,7 @@ int main(int argc, const char * argv[]) {
         outs[i] = out;
     }
     
-    int num_holds = 5;
+    int num_holds = 300;
     scalar* hins[num_trains];
     scalar* houts[num_trains];
     
@@ -98,12 +99,14 @@ int main(int argc, const char * argv[]) {
 //            exit(9001);
 //        }
         
-        if (net->error < 0.05) {
+        scalar error_threshold = 0.02;
+        
+        if (net->error < error_threshold) {
             scalar holdout_error = get_net_error(net, num_holds, hins, houts, 0);
             if (holdout_error < holdout_best) {
                 holdout_best = holdout_error;
             }
-            if (holdout_error < 0.05) {
+            if (holdout_error < error_threshold) {
                 printf("\n");
                 printf("%d iterations\n", i);
                 printf("current: %f, best: %f\n", net->error, net->best_error);

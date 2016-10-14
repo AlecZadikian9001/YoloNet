@@ -154,11 +154,15 @@ void train_neuron(Neuron* n, scalar* input, scalar output) {
         // delta = 2 * error * n->dfunc(input[i]) * input[i]; // ∂E^2/dW_i
         // (new W_i) = (old W_i) - (learning rate) * ∂E^2/dW_i
         scalar sum = get_neuron_sum(n, input);
-        scalar learning_rate = n->learning_rate;
+        scalar learning_rate = n->learning_rate; // TODO make this dynamic
         scalar new_weight = n->weights[i] - (learning_rate * 2 * error * n->dfunc(sum) * input[i]);
         scalar new_backprop = input[i] - (n->backprop_rate * 2 * error * n->dfunc(sum)); // just ∂E^2/∂I_i
-        // TODO biase adjustment may be broken... pls fix
-        scalar new_bias = max(min(n->biases[i] - (learning_rate * 2 * error * n->biases[i]), n->b_rand_end), n->b_rand_start);
+        // TODO bias adjustment may be broken... pls fix
+        scalar new_bias = max(
+                              min(
+                                  n->biases[i] - (learning_rate * 2 * error * n->dfunc(sum)),
+                                  n->b_rand_end),
+                              n->b_rand_start);
         if (new_bias > 9000 || new_bias < -9000) {
             perror("new_bias is too extreme\n");
             exit(2);
