@@ -14,6 +14,16 @@
 
 #include "neuron.h"
 
+#define max(a,b) \
+({ __typeof__ (a) _a = (a); \
+__typeof__ (b) _b = (b); \
+_a > _b ? _a : _b; })
+
+#define min(a,b) \
+({ __typeof__ (a) _a = (a); \
+__typeof__ (b) _b = (b); \
+_a < _b ? _a : _b; })
+
 /* defaults */
 #define DEFAULT_LEARNING_RATE (0.1)
 #define DEFAULT_BACKPROP_RATE (0.1)
@@ -144,14 +154,22 @@ void train_neuron(Neuron* n, scalar* input, scalar output) {
         // delta = 2 * error * n->dfunc(input[i]) * input[i]; // ∂E^2/dW_i
         // (new W_i) = (old W_i) - (learning rate) * ∂E^2/dW_i
         scalar sum = get_neuron_sum(n, input);
-        scalar new_weight = n->weights[i] - (n->learning_rate * 2 * error * n->dfunc(sum) * input[i]);
+        scalar learning_rate = n->learning_rate;
+        scalar new_weight = n->weights[i] - (learning_rate * 2 * error * n->dfunc(sum) * input[i]);
         scalar new_backprop = input[i] - (n->backprop_rate * 2 * error * n->dfunc(sum)); // just ∂E^2/∂I_i
-        if (new_weight != new_weight || new_backprop != new_backprop) {
-            perror("new weight or backprop = NAN");
+        // TODO biase adjustment may be broken... pls fix
+        scalar new_bias = max(min(n->biases[i] - (learning_rate * 2 * error * n->biases[i]), n->b_rand_end), n->b_rand_start);
+        if (new_bias > 9000 || new_bias < -9000) {
+            perror("new_bias is too extreme\n");
+            exit(2);
+        }
+        if (new_weight != new_weight || new_backprop != new_backprop || new_bias != new_bias) {
+            perror("new weight or backprop or bias = NAN\n");
             exit(2);
         }
         n->weights[i] = new_weight;
         n->backprop[i] = new_backprop;
+        n->biases[i] = new_bias;
     }
 }
 

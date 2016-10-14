@@ -97,7 +97,7 @@ int main(int argc, const char * argv[]) {
 //            exit(9001);
 //        }
         
-        if (net->error < 0.005) {
+        if (net->error < 0.05) {
             printf("\n");
             printf("%d iterations\n", i);
             printf("current: %f, best: %f\n", net->error, net->best_error);
