@@ -32,8 +32,8 @@ _a < _b ? _a : _b; })
 #define DEFAULT_RAND_END (10)
 
 /* misc */
-#define SCALAR_GRANULARITY ((scalar) 100000)
-#define RANDOM_GRANULARITY (10000)
+#define SCALAR_GRANULARITY ((scalar) 10000000000)
+#define RANDOM_GRANULARITY (1000000000000000)
 
 void free_neuron(Neuron* neuron) {
     free(neuron->weights);
@@ -138,7 +138,8 @@ scalar activate_neuron(Neuron* n, scalar* input) {
 void train_neuron(Neuron* n, scalar* input, scalar output) {
     
     /* randomization (if triggered) */
-    if (n->rand_rate >= ((double) (rand() % RANDOM_GRANULARITY)) / ((double) RANDOM_GRANULARITY)) {
+    scalar rand_roll = ((double) (rand() % RANDOM_GRANULARITY)) / ((double) RANDOM_GRANULARITY);
+    if (n->rand_rate > rand_roll) {
         //TRACE("Randomizing neuron (probability %f)\n", n->rand_rate);
         randomize_neuron(n);
     }
@@ -155,11 +156,14 @@ void train_neuron(Neuron* n, scalar* input, scalar output) {
     scalar error = test - output;
     for (int i = 0; i < n->dimension; i++) {
         scalar sum = get_neuron_sum(n, input);
+        
         scalar learning_rate = n->learning_rate; // TODO make this dynamic
+        scalar backprop_rate = n->backprop_rate; // TODO make this dynamic
+        
         scalar new_weight = n->weights[i] - learning_rate * ( (2 * error * n->dfunc(sum) * input[i]) ); // ∂E^2/∂W_i
-        scalar new_backprop = input[i] - n->backprop_rate * ( (2 * error * n->dfunc(sum)) * (n->weights[i]) ); // ∂E^2/∂O_i
-        // TODO bias adjustment may be broken... pls fix
-        scalar new_bias = n->biases[i] - learning_rate * ( (2 * error * n->dfunc(sum)) * 1 );
+        scalar new_backprop = input[i] - backprop_rate * ( (2 * error * n->dfunc(sum)) * (n->weights[i]) ); // ∂E^2/∂O_i
+        scalar new_bias = n->biases[i] - learning_rate * ( (2 * error * n->dfunc(sum)) * 1 ); // ∂E^2/∂B = ∂E^2/∂I * ∂I/∂B
+        
         if (new_bias > 9000 || new_bias < -9000) {
             perror("new_bias is too extreme\n");
             exit(2);
@@ -168,6 +172,7 @@ void train_neuron(Neuron* n, scalar* input, scalar output) {
             perror("new weight or backprop or bias = NAN\n");
             exit(2);
         }
+        
         n->weights[i] = new_weight;
         n->backprop[i] = new_backprop;
         n->biases[i] = new_bias;

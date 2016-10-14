@@ -15,9 +15,9 @@
 #define NET_W_END (-NET_W_START)
 #define NET_B_START -1.0
 #define NET_B_END (-NET_B_START)
-#define NET_RAND_RATE  0.000000001
-#define NET_LEARN_RATE 0.00025
-#define NET_BACKPROP_RATE 0.5
+#define NET_RAND_RATE  (0.000000000001)
+#define NET_LEARN_RATE (0.00025)
+#define NET_BACKPROP_RATE (0.5)
 
 #define TRAIN(f_, ...) //printf("[TRAINING] "); printf((f_), __VA_ARGS__)
 #define TRAIN_(f_, ...) //printf((f_), __VA_ARGS__)
@@ -177,6 +177,8 @@ Neural_Net* mk_deep_net(int num_inputs, int num_outputs, int num_layers, int* la
         }
 //        n->rand_rate = 0;
 //        n->learning_rate = 0;
+        n->rand_rate = NET_RAND_RATE;
+        n->learning_rate = NET_LEARN_RATE;
         n->backprop_rate = NET_BACKPROP_RATE;
         
         Neural_Node* nn = mk_neural_node(n, i, last_num_nodes, last_nodes, 0, NULL);
