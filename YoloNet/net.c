@@ -15,8 +15,8 @@
 #define NET_W_END (-NET_W_START)
 #define NET_B_START -1.0
 #define NET_B_END (-NET_B_START)
-#define NET_RAND_RATE  (0.000000000001)
-#define NET_LEARN_RATE (0.00025)
+#define NET_RAND_RATE  (0.000000000000001)
+#define NET_LEARN_RATE (0.000000000025)
 #define NET_BACKPROP_RATE (0.5)
 
 #define TRAIN(f_, ...) //printf("[TRAINING] "); printf((f_), __VA_ARGS__)
@@ -107,6 +107,15 @@ Neural_Net* mk_deep_net(int num_inputs, int num_outputs, int num_layers, int* la
     int* nodes_per_level = emalloc(sizeof(int) * num_levels);
     Neural_Node*** levels = emalloc(sizeof(Neural_Node**) * num_levels);
     
+    Neural_Net* ret = emalloc(sizeof(Neural_Net));
+    ret->nodes_per_level = nodes_per_level;
+    ret->num_levels = num_levels;
+    ret->error = -1;
+    ret->best_error = -1;
+    ret->best_params = NULL;
+    ret->backprop_rate = NET_BACKPROP_RATE;
+    ret->learning_rate = NET_LEARN_RATE;
+    
     /* input layer */
     Neural_Node** inputs = emalloc(sizeof(Neural_Node*) * 1);
     
@@ -119,7 +128,8 @@ Neural_Net* mk_deep_net(int num_inputs, int num_outputs, int num_layers, int* la
     n->rand_rate = 0;
     n->learning_rate = 0;
     n->backprop_rate = NET_BACKPROP_RATE;
-        
+    n->backprop_rate_ptr = &(ret->backprop_rate);
+    
     Neural_Node* in_node = mk_neural_node(n, 0, 0, NULL, layers[0], NULL);
     inputs[0] = in_node;
     
@@ -149,6 +159,8 @@ Neural_Net* mk_deep_net(int num_inputs, int num_outputs, int num_layers, int* la
             n->rand_rate = NET_RAND_RATE;
             n->learning_rate = NET_LEARN_RATE;
             n->backprop_rate = NET_BACKPROP_RATE;
+            n->learning_rate_ptr = &(ret->learning_rate);
+            n->backprop_rate_ptr = &(ret->backprop_rate);
             
             randomize_neuron(n);
             Neural_Node* nn = mk_neural_node(n, j, last_num_nodes, last_nodes, next_num_nodes, NULL);
@@ -180,6 +192,8 @@ Neural_Net* mk_deep_net(int num_inputs, int num_outputs, int num_layers, int* la
         n->rand_rate = NET_RAND_RATE;
         n->learning_rate = NET_LEARN_RATE;
         n->backprop_rate = NET_BACKPROP_RATE;
+        n->learning_rate_ptr = &(ret->learning_rate);
+        n->backprop_rate_ptr = &(ret->backprop_rate);
         
         Neural_Node* nn = mk_neural_node(n, i, last_num_nodes, last_nodes, 0, NULL);
         outputs[i] = nn;
@@ -190,17 +204,11 @@ Neural_Net* mk_deep_net(int num_inputs, int num_outputs, int num_layers, int* la
     levels[num_layers + 1] = outputs;
     nodes_per_level[num_layers + 1] = num_outputs;
     
-    Neural_Net* ret = emalloc(sizeof(Neural_Net));
     ret->num_outputs = num_outputs;
     ret->output_nodes = outputs;
     ret->num_inputs = num_inputs;
     ret->input_nodes = inputs;
     ret->levels = levels;
-    ret->nodes_per_level = nodes_per_level;
-    ret->num_levels = num_levels;
-    ret->error = -1;
-    ret->best_error = -1;
-    ret->best_params = NULL;
     
     return ret;
 }

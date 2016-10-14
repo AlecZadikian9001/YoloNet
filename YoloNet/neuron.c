@@ -46,7 +46,9 @@ Neuron* mk_neuron(int dimension, scalar (*func)(scalar), scalar (*dfunc)(scalar)
     neuron->last_output = NAN;
     
     neuron->learning_rate = DEFAULT_LEARNING_RATE;
+    neuron->learning_rate_ptr = NULL;
     neuron->backprop_rate = DEFAULT_BACKPROP_RATE;
+    neuron->backprop_rate_ptr = NULL;
     neuron->rand_rate = DEFAULT_RAND_RATE;
     neuron->w_rand_start = DEFAULT_RAND_START;
     neuron->w_rand_end = DEFAULT_RAND_END;
@@ -157,8 +159,18 @@ void train_neuron(Neuron* n, scalar* input, scalar output) {
     for (int i = 0; i < n->dimension; i++) {
         scalar sum = get_neuron_sum(n, input);
         
-        scalar learning_rate = n->learning_rate; // TODO make this dynamic
-        scalar backprop_rate = n->backprop_rate; // TODO make this dynamic
+        scalar learning_rate;
+        if (!n->learning_rate_ptr) {
+            learning_rate = n->learning_rate;
+        } else {
+            learning_rate = *(n->learning_rate_ptr);
+        }
+        scalar backprop_rate;
+        if (!n->backprop_rate_ptr) {
+            backprop_rate = n->backprop_rate;
+        } else {
+            backprop_rate = *(n->backprop_rate_ptr);
+        }
         
         scalar new_weight = n->weights[i] - learning_rate * ( (2 * error * n->dfunc(sum) * input[i]) ); // ∂E^2/∂W_i
         scalar new_backprop = input[i] - backprop_rate * ( (2 * error * n->dfunc(sum)) * (n->weights[i]) ); // ∂E^2/∂O_i

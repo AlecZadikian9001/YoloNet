@@ -37,8 +37,8 @@ int main(int argc, const char * argv[]) {
     
     srand((int) time(NULL));
     
-    int num_layers = 3;
-    int layers[] = {3, 10, 3};
+    int num_layers = 5;
+    int layers[] = {2, 2, 10, 10, 10};
     int num_inputs = 3;
     int num_outputs = 1;
     Neural_Net* net = mk_deep_net(num_inputs, num_outputs, num_layers, layers);
@@ -62,8 +62,8 @@ int main(int argc, const char * argv[]) {
     }
     
     int num_holds = 300;
-    scalar* hins[num_trains];
-    scalar* houts[num_trains];
+    scalar* hins[num_holds];
+    scalar* houts[num_holds];
     
     for (int i = 0; i < num_holds; i++) {
         scalar* in = emalloc(sizeof(scalar) * num_inputs);
@@ -93,11 +93,7 @@ int main(int argc, const char * argv[]) {
         train_net(net, num_trains, ins, outs);
         finish_net_sequence(net);
         
-//        calc_error = get_net_error(net, 4, ins, outs, 0);
-//        if (net->error != calc_error) {
-//            printf("WTF. error = %f, calc_error = %f\n", net->error, calc_error);
-//            exit(9001);
-//        }
+        net->learning_rate = 0.00000025 * net->error;
         
         scalar error_threshold = 0.02;
         
@@ -113,11 +109,12 @@ int main(int argc, const char * argv[]) {
                 break;
             }
         }
-        if (last_error != net->best_error) {
-            printf("\nnew best!\n");
-        }
-        if (last_error != net->best_error || i % 1000 == 0) {
-            printf("\rcurrent: %f, best: %f, holdout best: %f", net->error, net->best_error, holdout_best);
+//        if (last_error != net->best_error) {
+//            printf("\nnew best!\n");
+//        }
+        if (/*last_error != net->best_error ||*/ i % 100 == 0) {
+            printf("\rlearn: %.10e, current: %f, best: %f, holdout best: %f",
+                   net->learning_rate, net->error, net->best_error, holdout_best);
             fflush(stdout);
         }
         last_error = net->best_error;

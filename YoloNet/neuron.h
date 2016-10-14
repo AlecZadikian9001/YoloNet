@@ -29,7 +29,9 @@ typedef struct {
 
     // stuff to tune
     scalar learning_rate; // learning rate
+    scalar* learning_rate_ptr; // learning rate (settable from outside)
     scalar backprop_rate; // backpropogation rate
+    scalar* backprop_rate_ptr; // backprop rate (settable from outside)
     scalar rand_rate; // chance of randomizing
     scalar w_rand_start; // start of random weight
     scalar w_rand_end; // end of random weight
