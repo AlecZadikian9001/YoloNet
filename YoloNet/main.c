@@ -29,6 +29,9 @@
 #include "net.h"
 
 scalar f(scalar i1, scalar i2) {
+//    if (i1 > i2) {
+//        return log(i1 * i2);
+//    }
     return sin(i1 + i2);
 }
 
@@ -36,10 +39,10 @@ int main(int argc, const char * argv[]) {
     
     srand((int) time(NULL));
     
-    int num_layers = 40;
+    int num_layers = 10;
     int layers[num_layers];
     for (int i = 0; i < num_layers; i++) {
-        layers[i] = 10;
+        layers[i] = 20;
     }
     int num_inputs = 2;
     int num_outputs = 1;
@@ -93,12 +96,13 @@ int main(int argc, const char * argv[]) {
     scalar holdout_error = INFINITY;
     scalar last_best_error = INFINITY;
     int repeats = 0;
+    int reset = 0;
     for (int i = 0; 1; i++) {
         begin_net_sequence(net);
         train_net(net, num_trains, ins, outs);
         finish_net_sequence(net);
         
-        net->learning_rate = 0.01 * pow(fabs(net->error), 1);
+        net->learning_rate = 0.00001 * pow(fabs(net->error), 1);
         
         scalar error_threshold = 0.1;
         
@@ -118,13 +122,15 @@ int main(int argc, const char * argv[]) {
 //        if (last_error != net->best_error) {
 //            printf("\nnew best!\n");
 //        }
-        if (/*last_error != net->best_error ||*/ i % 100 == 0) {
+        if (/*last_error != net->best_error ||*/ i % 100 == 0 || reset) {
+            reset = 0;
             if (net->best_error == last_best_error) {
                 repeats += 1;
                 if (repeats > 10) {
-                    printf("\nrandomizing!\n");
-                    randomize_net(net);
+                    printf("\nresetting to best!\n");
+                    set_net_best(net);
                     repeats = 0;
+                    reset = 1;
                 }
             }
             printf("\rlearn: %.10e, current: %f, best: %f, holdout: %f, holdout best: %f",

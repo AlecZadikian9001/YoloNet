@@ -32,7 +32,7 @@ _a < _b ? _a : _b; })
 #define DEFAULT_RAND_END (10)
 
 /* misc */
-#define SCALAR_GRANULARITY ((scalar) 10000000000)
+#define SCALAR_GRANULARITY ((scalar) 10000)
 #define RANDOM_GRANULARITY (1000000000000000)
 
 void free_neuron(Neuron* neuron) {
@@ -63,6 +63,8 @@ Neuron* mk_neuron(int dimension, scalar (*func)(scalar), scalar (*dfunc)(scalar)
     
     neuron->func = func;
     neuron->dfunc = dfunc;
+    
+    randomize_neuron(neuron);
     
     return neuron;
 }
@@ -96,7 +98,7 @@ void randomize_neuron(Neuron* n) {
             end = n->w_rand_end;
             mod = ((scalar) (end - start)) * SCALAR_GRANULARITY;
         }
-        else if (i == n -> dimension) { // biases
+        else if (i == n->dimension) { // biases
             start = n->b_rand_start;
             end = n->b_rand_end;
             mod = ((scalar) (end - start)) * SCALAR_GRANULARITY;
@@ -178,6 +180,7 @@ void train_neuron(Neuron* n, scalar* input, scalar dEdA) {
         
         scalar new_weight = n->weights[i] - learning_rate * ( dEdA * n->dfunc(sum) * input[i] ); // ∂E/∂W_i
         scalar new_bias = n->biases[i] - learning_rate * ( dEdA * n->dfunc(sum) ); // ∂E/∂B_i
+        new_bias = max(min(new_bias, 9000), -9000);
         scalar new_backprop = dEdA * n->dfunc(sum) * n->weights[i]; // ∂E/∂A (new)
         
         // sanity checks
