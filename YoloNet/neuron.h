@@ -66,7 +66,7 @@ Neuron* clone_neuron(Neuron* n);
 
 void randomize_neuron(Neuron* n);
 scalar activate_neuron(Neuron* n, scalar* input);
-void train_neuron(Neuron* n, scalar* input, scalar output);
+void train_neuron(Neuron* n, scalar* input, scalar dEdA);
     
 /* end */
 

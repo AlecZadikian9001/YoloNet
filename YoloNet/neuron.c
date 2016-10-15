@@ -134,10 +134,12 @@ scalar activate_neuron(Neuron* n, scalar* input) {
 }
 
 /* 
- try input on neuron with given "correct" output, and train for one sequence item
- set the "correct" values to propogate to inputs
+ train neuron
+ n: neuron
+ input: input to neuron
+ dEdA: derivative of network error WRT activation of neuron
  */
-void train_neuron(Neuron* n, scalar* input, scalar output) {
+void train_neuron(Neuron* n, scalar* input, scalar dEdA) {
     
     /* randomization (if triggered) */
     scalar rand_roll = ((double) (rand() % RANDOM_GRANULARITY)) / ((double) RANDOM_GRANULARITY);
@@ -149,13 +151,11 @@ void train_neuron(Neuron* n, scalar* input, scalar output) {
     /* weight update */
     // http://www.philbrierley.com/main.html?code/bpproof.html&code/codeleft.html :
     // ∂E/∂I = E * f'(I)
-    // ∂E/dW_i = ∂E^2/∂I_i * ∂I/∂W_i
-    // ∂I/∂W_i = O_i
-    // ∂E/∂O_i = ∂E/∂I * ∂I/∂O_i
-    // ∂I/∂O_i = W_i
-    // ∂I/∂B_i = 1
-    scalar test = activate_neuron(n, input);
-    scalar error = test - output;
+    // ∂E/dW_i = ∂E/∂A * ∂A/∂W_i = ∂E/∂A * f'(I) * O_i
+    // ∂A/∂W_i = ∂A/∂I * ∂I/∂W_i = f'(I) * W_i
+    // ∂E/∂B_i = ∂E/∂A * ∂A/∂B_i = ∂E/∂A * ∂A/∂I * ∂I/∂B_i
+    // ∂E/∂O_i = ∂E/∂A * ∂A/∂O_i = ∂E/∂A * ∂A/∂I * ∂I/∂O_i = ∂E/∂A * f'(I) * W_i
+    // new ∂E/∂A = ∂E/∂O_i
     for (int i = 0; i < n->dimension; i++) {
         scalar sum = get_neuron_sum(n, input);
         
@@ -176,9 +176,9 @@ void train_neuron(Neuron* n, scalar* input, scalar output) {
         backprop_rate = min(backprop_rate, 0.1);
         
         // TODO Something fishy is going on here.
-        scalar new_weight = n->weights[i] - learning_rate * ( (error * n->dfunc(sum) * input[i]) ); // ∂E/∂W_i
-        scalar new_backprop = input[i] - backprop_rate * ( (error * n->dfunc(sum)) * n->weights[i] ); // ∂E/∂O_i
-        scalar new_bias = n->biases[i] - pow(learning_rate, 4) * ( (error * n->dfunc(sum)) * 1 ); // ∂E/∂B = ∂E/∂I * ∂I/∂B
+        scalar new_weight = n->weights[i] - learning_rate * ( dEdA * n->dfunc(sum) * input[i] ); // ∂E/∂W_i
+        scalar new_bias = n->biases[i] - learning_rate * ( dEdA * n->dfunc(sum) ); // ∂E/∂B_i
+        scalar new_backprop = dEdA * n->dfunc(sum) * n->weights[i]; // ∂E/∂A (new)
         
         // TODO temp overrides
         //new_backprop = input[i] - backprop_rate * ( (2 * error * n->dfunc(sum)) );
