@@ -175,15 +175,9 @@ void train_neuron(Neuron* n, scalar* input, scalar dEdA) {
         learning_rate = min(learning_rate, 0.1);
         backprop_rate = min(backprop_rate, 0.1);
         
-        // TODO Something fishy is going on here.
         scalar new_weight = n->weights[i] - learning_rate * ( dEdA * n->dfunc(sum) * input[i] ); // ∂E/∂W_i
         scalar new_bias = n->biases[i] - learning_rate * ( dEdA * n->dfunc(sum) ); // ∂E/∂B_i
         scalar new_backprop = dEdA * n->dfunc(sum) * n->weights[i]; // ∂E/∂A (new)
-        
-        // TODO temp overrides
-        //new_backprop = input[i] - backprop_rate * ( (2 * error * n->dfunc(sum)) );
-        //new_bias = n->biases[i] - learning_rate * ( (2 * error) * 1 );
-        //new_bias = n->biases[i];
         
         // sanity checks
         if (new_bias > 9000 || new_bias < -9000) {
