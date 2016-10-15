@@ -272,61 +272,50 @@ void train_net_helper(Neural_Net* net, scalar* input, scalar* outputs) {
             ins = input;
         }
         
-        TRAIN("\n", 0);
-        TRAIN("Examining level %d, %d nodes, inputs:", level_i, nodes_per_level);
-        int nppl;
-        if (level_i > 0) {
-            nppl = net->nodes_per_level[level_i - 1];
-        } else {
-            nppl = net->num_inputs;
-        }
-        for (int i = 0; i < nppl; i++) {
-            TRAIN_(" %f", ins[i]);
-        }
-        TRAIN_("\n", 0);
+//        TRAIN("\n", 0);
+//        TRAIN("Examining level %d, %d nodes, inputs:", level_i, nodes_per_level);
+//        int nppl;
+//        if (level_i > 0) {
+//            nppl = net->nodes_per_level[level_i - 1];
+//        } else {
+//            nppl = net->num_inputs;
+//        }
+//        for (int i = 0; i < nppl; i++) {
+//            TRAIN_(" %f", ins[i]);
+//        }
+//        TRAIN_("\n", 0);
         
     
         for (int i = 0; i < nodes_per_level; i++) {
             Neural_Node* nn = net->levels[level_i][i];
             
-            scalar* dEdAs;
+            scalar dEdA = 0;
             int num_outs;
             if (level_i != net->num_levels - 1) { // if not output
                 num_outs = nn->num_outputs;
-                dEdAs = emalloc(sizeof(scalar) * num_outs);
-                for (int parent = 0; parent < nn->num_outputs; parent++) {
-                    parent_output[parent] = nn->outputs[parent]->neuron->backprop[nn->index];
+                for (int out_i = 0; out_i < nn->num_outputs; out_i++) {
+                    dEdA += nn->outputs[out_i]->neuron->backprop[nn->index];
                 }
             } else { // if output
-                num_parents = 1;
-                parent_output = emalloc(sizeof(scalar) * num_parents);
-                parent_output[0] = outputs[i];
+                dEdA += 2 * error * nn->neuron->weights[i];
             }
             
-            TRAIN("Node %d (index %d) pre-adjustment (weight, bias, backprop)s:", i, nn->index);
-            for (int j = 0; j < nn->neuron->dimension; j++) {
-                TRAIN_(" (%f, %f, %f)", nn->neuron->weights[j], nn->neuron->biases[j], nn->neuron->backprop[j]);
-            }
-            TRAIN_("\n", 0);
+//            TRAIN("Node %d (index %d) pre-adjustment (weight, bias, backprop)s:", i, nn->index);
+//            for (int j = 0; j < nn->neuron->dimension; j++) {
+//                TRAIN_(" (%f, %f, %f)", nn->neuron->weights[j], nn->neuron->biases[j], nn->neuron->backprop[j]);
+//            }
+//            TRAIN_("\n", 0);
             
             activate_neuron(nn->neuron, ins);
-            
-            TRAIN("Node %d runtime vs expected outputs: ", i);
-            for (int parent = 0; parent < num_parents; parent++) {
-                
-                TRAIN_(" (%f vs %f)", activate_neuron(nn->neuron, ins), parent_output[parent]);
-                
-                train_neuron(nn->neuron, ins, parent_output[parent]);
-            }
-            free(parent_output);
+            train_neuron(nn->neuron, ins, dEdA);
          
-            TRAIN_("\n", 0);
+//            TRAIN_("\n", 0);
             
-            TRAIN("Node %d pst-adjustment (weight, bias, backprop)s:", i);
-            for (int j = 0; j < nn->neuron->dimension; j++) {
-                TRAIN_(" (%f, %f, %f)", nn->neuron->weights[j], nn->neuron->biases[j], nn->neuron->backprop[j]);
-            }
-            TRAIN_("\n", 0);
+//            TRAIN("Node %d pst-adjustment (weight, bias, backprop)s:", i);
+//            for (int j = 0; j < nn->neuron->dimension; j++) {
+//                TRAIN_(" (%f, %f, %f)", nn->neuron->weights[j], nn->neuron->biases[j], nn->neuron->backprop[j]);
+//            }
+//            TRAIN_("\n", 0);
         }
         
         if (ins != input) {

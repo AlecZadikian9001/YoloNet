@@ -30,6 +30,9 @@
 
 scalar f(scalar i1, scalar i2) {
     //return i1 + i2;
+    if (i1 > i2) {
+        return i1 * i1;
+    }
     return sin(i1) + i2;
     //return tanh(i1);
     
@@ -44,10 +47,10 @@ int main(int argc, const char * argv[]) {
     
     srand((int) time(NULL));
     
-    int num_layers = 1;
+    int num_layers = 8;
     int layers[num_layers];
     for (int i = 0; i < num_layers; i++) {
-        layers[i] = 2;
+        layers[i] = 10;
     }
     int num_inputs = 2;
     int num_outputs = 1;
