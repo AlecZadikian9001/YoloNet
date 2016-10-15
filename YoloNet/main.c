@@ -29,25 +29,17 @@
 #include "net.h"
 
 scalar f(scalar i1, scalar i2) {
-    //return i1 + i2;
-    return sin(i1) + i2;
-    //return tanh(i1);
-    
-//    if (i2 < i3) {
-//        return i1;
-//    } else {
-//        return 2 * i2 - i3;
-//    }
+    return sin(i1 + i2);
 }
 
 int main(int argc, const char * argv[]) {
     
     srand((int) time(NULL));
     
-    int num_layers = 1;
+    int num_layers = 40;
     int layers[num_layers];
     for (int i = 0; i < num_layers; i++) {
-        layers[i] = 2;
+        layers[i] = 10;
     }
     int num_inputs = 2;
     int num_outputs = 1;
