@@ -11,11 +11,11 @@
 #include "net.h"
 #include "neuron.h"
 
-#define NET_W_START (-2.0)
+#define NET_W_START (-20.0)
 #define NET_W_END (-NET_W_START)
-#define NET_B_START -1.0
+#define NET_B_START -10.0
 #define NET_B_END (-NET_B_START)
-#define NET_RAND_RATE  (0.000000000001)
+#define NET_RAND_RATE  (0.000001)
 #define NET_LEARN_RATE (0.0025)
 #define NET_BACKPROP_RATE (1.0)
 
@@ -61,7 +61,7 @@ Neuron** save_net_neurons(Neural_Net* net) {
         neuron_count += net->nodes_per_level[level_i];
     }
     
-    Neuron** ret = emalloc(sizeof(Neuron**) * neuron_count);
+    Neuron** ret = emalloc(sizeof(Neuron*) * neuron_count);
     
     int i = 0;
     for (int level_i = 0; level_i < net->num_levels; level_i++) {
@@ -196,6 +196,7 @@ Neural_Net* mk_deep_net(int num_inputs, int num_outputs, int num_layers, int* la
         n->backprop_rate = NET_BACKPROP_RATE;
         n->learning_rate_ptr = &(ret->learning_rate);
         n->backprop_rate_ptr = &(ret->backprop_rate);
+        randomize_neuron(n);
         
         Neural_Node* nn = mk_neural_node(n, i, last_num_nodes, last_nodes, 0, NULL);
         outputs[i] = nn;
@@ -376,8 +377,8 @@ void train_net(Neural_Net* net, int num_trains, scalar** inputs, scalar** output
 void finish_net_sequence(Neural_Net* net) {
     if (net->best_error < 0 || net->error < net->best_error) {
         net->best_error = net->error;
-        free_net_neurons(net, net->best_params);
-        net->best_params = save_net_neurons(net);
+//        free_net_neurons(net, net->best_params); // TODO temp disabled
+//        net->best_params = save_net_neurons(net);
     }
 }
 

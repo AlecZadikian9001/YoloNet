@@ -38,6 +38,7 @@ _a < _b ? _a : _b; })
 void free_neuron(Neuron* neuron) {
     free(neuron->weights);
     free(neuron->biases);
+    free(neuron->backprop);
     free(neuron);
 }
 
