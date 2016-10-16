@@ -153,10 +153,8 @@ void train_neuron(Neuron* n, scalar* input, scalar dEdA) {
     
     /* weight update */
     // http://www.philbrierley.com/main.html?code/bpproof.html&code/codeleft.html :
-    // ∂E/∂I = E * f'(I)
-    // ∂E/dW_i = ∂E/∂A * ∂A/∂W_i = ∂E/∂A * f'(I) * O_i
-    // ∂A/∂W_i = ∂A/∂I * ∂I/∂W_i = f'(I) * W_i
-    // ∂E/∂B_i = ∂E/∂A * ∂A/∂B_i = ∂E/∂A * ∂A/∂I * ∂I/∂B_i
+    // ∂E/dW_i = ∂E/∂A * ∂A/∂W_i = ∂E/∂A * ∂A/∂I * ∂I/∂W_i = ∂E/∂A * f'(I) * O_i
+    // ∂E/∂B_i = ∂E/∂A * ∂A/∂B_i = ∂E/∂A * ∂A/∂I * ∂I/∂B_i = ∂E/∂A * f'(I) * 1
     // ∂E/∂O_i = ∂E/∂A * ∂A/∂O_i = ∂E/∂A * ∂A/∂I * ∂I/∂O_i = ∂E/∂A * f'(I) * W_i
     // new ∂E/∂A = ∂E/∂O_i
     for (int i = 0; i < n->dimension; i++) {
@@ -180,8 +178,16 @@ void train_neuron(Neuron* n, scalar* input, scalar dEdA) {
         
         scalar new_weight = n->weights[i] - learning_rate * ( dEdA * n->dfunc(sum) * input[i] ); // ∂E/∂W_i
         scalar new_bias = n->biases[i] - learning_rate * ( dEdA * n->dfunc(sum) ); // ∂E/∂B_i
-        new_bias = max(min(new_bias, 9000), -9000);
-        scalar new_backprop = dEdA * n->dfunc(sum) * n->weights[i]; // ∂E/∂A (new)
+        //new_bias = max(min(new_bias, 9000), -9000);
+        
+        // apply changes
+        n->weights[i] = new_weight;
+        n->biases[i] = new_bias;
+        
+        // backprop
+        sum = get_neuron_sum(n, input);
+        scalar new_backprop = dEdA * n->dfunc(sum) * n->weights[i];
+        n->backprop[i] = new_backprop; // ∂E/∂A for previous node
         
         // sanity checks
         if (new_bias > 9000 || new_bias < -9000) {
@@ -192,11 +198,6 @@ void train_neuron(Neuron* n, scalar* input, scalar dEdA) {
             perror("new weight or backprop or bias = NAN\n");
             exit(2);
         }
-        
-        // apply changes
-        n->weights[i] = new_weight;
-        n->backprop[i] = new_backprop;
-        n->biases[i] = new_bias;
     }
 }
 

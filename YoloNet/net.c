@@ -11,11 +11,11 @@
 #include "net.h"
 #include "neuron.h"
 
-#define NET_W_START (-2.0)
+#define NET_W_START (-0.001)
 #define NET_W_END (-NET_W_START)
-#define NET_B_START -1.0
+#define NET_B_START -0.001
 #define NET_B_END (-NET_B_START)
-#define NET_RAND_RATE  (0.000001)
+#define NET_RAND_RATE  (0.000000)
 #define NET_LEARN_RATE (0.0025)
 #define NET_BACKPROP_RATE (1.0)
 
@@ -313,6 +313,7 @@ void train_net_helper(Neural_Net* net, scalar* input, scalar* outputs) {
                     dEdA += nn->outputs[out_i]->neuron->backprop[nn->index];
                 }
             } else { // if output // TODO IDK WHAT TO PUT HERE
+                num_outs = 1;
                 dEdA += 2 * error;
             }
             

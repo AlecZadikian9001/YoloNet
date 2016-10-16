@@ -42,7 +42,7 @@ int main(int argc, const char * argv[]) {
     int num_layers = 10;
     int layers[num_layers];
     for (int i = 0; i < num_layers; i++) {
-        layers[i] = 20;
+        layers[i] = 6;
     }
     int num_inputs = 2;
     int num_outputs = 1;
@@ -102,7 +102,7 @@ int main(int argc, const char * argv[]) {
         train_net(net, num_trains, ins, outs);
         finish_net_sequence(net);
         
-        net->learning_rate = 0.00001 * pow(fabs(net->error), 1);
+        net->learning_rate = 0.000001 * pow(fabs(net->error), 1);
         
         scalar error_threshold = 0.1;
         
