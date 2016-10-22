@@ -28,7 +28,7 @@
 #include "neuron.h"
 #include "net.h"
 
-#define LEARNING_RATE (0.001)
+#define LEARNING_RATE (0.00001)
 
 scalar f(scalar i1, scalar i2) {
     return i1 + 6 * i2;
