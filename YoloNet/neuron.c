@@ -57,14 +57,16 @@ Neuron* mk_neuron(int dimension, scalar (*func)(scalar), scalar (*dfunc)(scalar)
     neuron->b_rand_end = DEFAULT_RAND_END;
     
     neuron->dimension = dimension;
-    neuron->backprop = emalloc(sizeof(scalar) * dimension);
-    neuron->weights = emalloc(sizeof(scalar) * dimension);
-    neuron->biases = emalloc(sizeof(scalar) * dimension);
+    size_t size = sizeof(scalar) * dimension;
+    neuron->backprop = emalloc(size);
+    neuron->weights = emalloc(size);
+    neuron->biases = emalloc(size);
+    bzero(neuron->backprop, size);
+    bzero(neuron->weights, size);
+    bzero(neuron->biases, size);
     
     neuron->func = func;
     neuron->dfunc = dfunc;
-    
-    randomize_neuron(neuron);
     
     return neuron;
 }
@@ -88,8 +90,8 @@ Neuron* clone_neuron(Neuron* n) {
 void randomize_neuron(Neuron* n) {
     scalar r;
     int mod = 0;
-    int start = 0;
-    int end = 0;
+    scalar start = 0;
+    scalar end = 0;
     for (int i = 0; i < n->dimension * 2; i++) {
         
         /* choose mod */
@@ -157,8 +159,8 @@ void train_neuron(Neuron* n, scalar* input, scalar dEdA) {
     // ∂E/∂B_i = ∂E/∂A * ∂A/∂B_i = ∂E/∂A * ∂A/∂I * ∂I/∂B_i = ∂E/∂A * f'(I) * 1
     // ∂E/∂O_i = ∂E/∂A * ∂A/∂O_i = ∂E/∂A * ∂A/∂I * ∂I/∂O_i = ∂E/∂A * f'(I) * W_i
     // new ∂E/∂A = ∂E/∂O_i
+    scalar sum = get_neuron_sum(n, input);
     for (int i = 0; i < n->dimension; i++) {
-        scalar sum = get_neuron_sum(n, input);
         
         // get rates
         scalar learning_rate;
@@ -178,7 +180,7 @@ void train_neuron(Neuron* n, scalar* input, scalar dEdA) {
         
         scalar new_weight = n->weights[i] - learning_rate * ( dEdA * n->dfunc(sum) * input[i] ); // ∂E/∂W_i
         scalar new_bias = n->biases[i] - learning_rate * ( dEdA * n->dfunc(sum) ); // ∂E/∂B_i
-        //new_bias = max(min(new_bias, 9000), -9000);
+        //new_bias = 0; // TODO temp
         
         // apply changes
         n->weights[i] = new_weight;

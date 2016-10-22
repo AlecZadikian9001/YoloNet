@@ -28,27 +28,26 @@
 #include "neuron.h"
 #include "net.h"
 
+#define LEARNING_RATE (0.001)
+
 scalar f(scalar i1, scalar i2) {
-//    if (i1 > i2) {
-//        return log(i1 * i2);
-//    }
-    return sin(i1 + i2);
+    return i1 + 6 * i2;
 }
 
 int main(int argc, const char * argv[]) {
     
     srand((int) time(NULL));
     
-    int num_layers = 10;
+    int num_layers = 1;
     int layers[num_layers];
     for (int i = 0; i < num_layers; i++) {
-        layers[i] = 6;
+        layers[i] = 1;
     }
     int num_inputs = 2;
     int num_outputs = 1;
     Neural_Net* net = mk_deep_net(num_inputs, num_outputs, num_layers, layers);
     
-    int num_trains = 10;
+    int num_trains = 100;
     scalar* ins[num_trains];
     scalar* outs[num_trains];
     
@@ -102,7 +101,7 @@ int main(int argc, const char * argv[]) {
         train_net(net, num_trains, ins, outs);
         finish_net_sequence(net);
         
-        net->learning_rate = 0.000001 * pow(fabs(net->error), 1);
+        net->learning_rate = LEARNING_RATE * pow(fabs(net->error), 1);
         
         scalar error_threshold = 0.1;
         

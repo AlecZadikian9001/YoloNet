@@ -13,7 +13,7 @@
 
 #include "general.h"
 
-void *emalloc(unsigned size)
+void *emalloc(size_t size)
 {
     void *p = malloc(size);
     if (p == NULL) {

@@ -10,7 +10,7 @@
 #define general_h
 
 /* m3m management stuff */
-void *emalloc(unsigned size);
+void *emalloc(size_t size);
 
 /* l0gging (BROKEN FOR NOW) */
 #define LOG_ERROR 0
